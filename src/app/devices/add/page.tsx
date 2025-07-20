@@ -1,17 +1,11 @@
 'use client'
-import { useEffect, useState } from 'react';
-import { Device } from '../device.js'
+import { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 
 const SocketComponent = () => {
 
   const [manualSetupCode, setManualSetupCode] = useState('');
-  const [devices, setDevices] = useState<Device>([]);
-
-  useEffect(() => {
-    fetch('/api/devices').then(r => r.json()).then(data => setDevices(data));
-  }, []);
 
   function performBasicCommissioning(e: any) {
     e.preventDefault();
@@ -30,7 +24,6 @@ const SocketComponent = () => {
         <Form.Control type="text" placeholder="1234-123-1234" value={manualSetupCode} onChange={(e) => setManualSetupCode(e.target.value)} />
       </Form.Group>
     </Form>
-    {/* <input type="text" placeholder="Pairing Code" value={manualSetupCode} onChange={(e) => setManualSetupCode(e.target.value)} /> */}
     <Button onClick={performBasicCommissioning}>Commission</Button>
   </div>;
 };
