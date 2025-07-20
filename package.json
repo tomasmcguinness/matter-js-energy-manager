@@ -1,0 +1,35 @@
+{
+    "dependencies": {
+        "@matter/main": "0.15.1",
+        "@project-chip/matter.js": "^0.15.1",
+        "@project-chip/matter.js-tools": "^0.10.7",
+        "bootstrap": "^5.3.7",
+        "next": "^15.4.1",
+        "react": "^19.1.0",
+        "react-bootstrap": "^2.10.10",
+        "react-dom": "^19.1.0",
+        "ws": "^8.18.3"
+    },
+    "devDependencies": {
+        "@types/node": "^24.0.7",
+        "@types/react": "19.1.8",
+        "autoprefixer": "^10.4.21",
+        "postcss": "^8.5.6",
+        "typescript": "~5.8.3"
+    },
+    "name": "matter-app",
+    "version": "0.1.0",
+    "type": "module",
+    "scripts": {
+        "dev": "next dev",
+        "start": "next start",
+        "lint": "next lint",
+        "prepare": "tsc",
+        "build": "tsc",
+        "app": "node --enable-source-maps dist/main.js",
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "clean": "node -e 'fs.rmSync(\"dist\", { recursive: true, force: true })'"
+    },
+    "description": "An example energy management system for Matter",
+    "author": "user.name=Tomas McGuinness <user.email=tomas@tomasmcguinness.com>"
+}

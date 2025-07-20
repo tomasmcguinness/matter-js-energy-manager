@@ -1,0 +1,32 @@
+import Container from 'react-bootstrap/Container';
+import Nav from 'react-bootstrap/Nav';
+import Navbar from 'react-bootstrap/Navbar';
+import NavbarBrand from 'react-bootstrap/NavbarBrand';
+import NavLink from 'react-bootstrap/NavLink';
+import Link from 'next/link'
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <head>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" />
+      </head>
+      <body>
+        <Navbar bg="dark" data-bs-theme="dark">
+          <Container>
+            <NavbarBrand href="/">Energy Manager</NavbarBrand>
+            <Nav className="me-auto">
+              <NavLink href="/">Home</NavLink>
+              <NavLink href="/devices">Devices</NavLink>
+            </Nav>
+          </Container>
+        </Navbar>
+        <Container>
+          <div style={{marginTop: '25px'}}>
+            {children}
+          </div>
+        </Container>
+      </body>
+    </html>
+  )
+}
