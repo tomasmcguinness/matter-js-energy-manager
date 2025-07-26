@@ -27,6 +27,6 @@ export default function Page({
     <h1>Node: {deviceId}</h1>
     <hr />
     {device && <EnergyTimeline forecast={device.forecast} />}
-    <Button onClick={sendStartTimeAdjustment}>Delay Start (1 hour)</Button>
+    <Button onClick={sendStartTimeAdjustment}>Delay Start</Button>
   </div>;
 };
