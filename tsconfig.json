@@ -24,7 +24,8 @@
       {
         "name": "next"
       }
-    ]
+    ],
+    "allowImportingTsExtensions": true
   },
   "include": [
     "./src/**/*.ts",

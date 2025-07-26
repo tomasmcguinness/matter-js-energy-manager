@@ -1,38 +1,14 @@
-import { Diagnostic, Environment, StorageService, Time } from "@matter/main";
+import { getController } from "../../services/matter.ts";
+import Device from '../../../device.js'
 import { GeneralCommissioning } from "@matter/main/clusters";
 import { ManualPairingCodeCodec } from "@matter/main/types";
-import { CommissioningController, NodeCommissioningOptions } from "@project-chip/matter.js";
-import { Device } from '../../device.js'
-
-const environment = Environment.default;
-
-const storageService = environment.get(StorageService);
-
-const uniqueId = "EnergyManager";
-
-const adminFabricLabel = "matter.js Controller";
-
-const commissioningController = new CommissioningController({
-    environment: {
-        environment,
-        id: uniqueId,
-    },
-    autoConnect: false, // Do not auto connect to the commissioned nodes
-    adminFabricLabel,
-});
-
-const controllerStorage = (await storageService.open("controller")).createContext("data");
-
-await controllerStorage.set("fabriclabel", adminFabricLabel);
-
-await commissioningController.start();
-
-console.log(`Commissioning controller started with id ${uniqueId} and label "${adminFabricLabel}"`);
+import { Diagnostic } from "@matter/main";
+import { NodeCommissioningOptions } from "@project-chip/matter.js";
 
 export async function GET(req: Request, res: any) {
-    const nodes = commissioningController.getCommissionedNodesDetails();
+    const nodeDetails = (await getController()).getCommissionedNodesDetails();
 
-    let devices : Device[] = nodes.map(n => { return <Device> { id: n.nodeId.toString(), name: n.advertisedName } });
+    let devices : Device[] = nodeDetails.map(n => { return <Device> { id: n.nodeId.toString() } });
 
     return new Response(JSON.stringify(devices), { status: 200 })
 }
@@ -63,7 +39,7 @@ export async function POST(request: Request) {
 
     console.log(`Commissioning ... ${Diagnostic.json(options)}`);
 
-    const nodeId = await commissioningController.commissionNode(options);
+    const nodeId = await (await getController()).commissionNode(options);
 
     console.log(`Commissioning successfully done with nodeId ${nodeId}`);
 

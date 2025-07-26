@@ -3,7 +3,8 @@ import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import NavbarBrand from 'react-bootstrap/NavbarBrand';
 import NavLink from 'react-bootstrap/NavLink';
-import Link from 'next/link'
+import Alert from 'react-bootstrap/Alert';
+import '../app/global.css';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -18,11 +19,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Nav className="me-auto">
               <NavLink href="/">Home</NavLink>
               <NavLink href="/devices">Devices</NavLink>
+              <NavLink href="/energy">Energy</NavLink>
             </Nav>
           </Container>
         </Navbar>
         <Container>
-          <div style={{marginTop: '25px'}}>
+          {/* <Alert variant={'primary'}>
+            Energy usage is being optimized....
+          </Alert> */}
+          <div style={{ marginTop: '25px' }}>
             {children}
           </div>
         </Container>
