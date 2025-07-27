@@ -3,6 +3,7 @@ import { CommissioningController } from "@project-chip/matter.js";
 import { DeviceEnergyManagement } from "@matter/main/clusters";
 import { ClusterClientObj } from "@matter/main/protocol";
 import { NodeStates } from "@project-chip/matter.js/device";
+import { getServer } from "../../../socketServer.js";
 
 const globalTemporal = global as unknown as { controller: CommissioningController }
 
@@ -102,6 +103,17 @@ export const getController = async () => {
     console.log(`Commissioning controller started with id ${uniqueId} and label "${adminFabricLabel}"`);
 
     globalTemporal.controller = commissioningController;
+
+    setInterval(function(){
+        console.log('Ticking');
+
+        let io = getServer();
+
+        if(io) {
+            console.log('Emitting');
+            io.emit("power", 10);
+        }
+    }, 1000);
 
     return globalTemporal.controller;
 }

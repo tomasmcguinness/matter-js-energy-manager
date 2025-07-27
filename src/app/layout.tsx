@@ -3,10 +3,12 @@ import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import NavbarBrand from 'react-bootstrap/NavbarBrand';
 import NavLink from 'react-bootstrap/NavLink';
-import Alert from 'react-bootstrap/Alert';
+// import Alert from 'react-bootstrap/Alert';
 import '../app/global.css';
+import { useEffect } from 'react';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+
   return (
     <html lang="en">
       <head>
@@ -23,14 +25,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </Nav>
           </Container>
         </Navbar>
-        <Container>
+        {/* <Container> */}
           {/* <Alert variant={'primary'}>
             Energy usage is being optimized....
           </Alert> */}
           <div style={{ marginTop: '25px' }}>
             {children}
           </div>
-        </Container>
+        {/* </Container> */}
       </body>
     </html>
   )
