@@ -6,6 +6,7 @@ import Table from 'react-bootstrap/Table';
 import Link from 'next/link'
 import Spinner from 'react-bootstrap/Spinner';
 import Badge from 'react-bootstrap/Badge'; 
+import Container from 'react-bootstrap/Container';
 
 export default function Page() {
 
@@ -25,7 +26,7 @@ export default function Page() {
     <tr key={device.id} style={{ cursor: 'pointer' }} onClick={() => handleRowClick(device)}><td>{device.id}</td><td><Badge pill bg="primary">Primary</Badge></td></tr>
   );
 
-  return <div>
+  return <Container>
     <h1>Commissioned Devices</h1>
     <hr />
     {!isLoading
@@ -46,5 +47,5 @@ export default function Page() {
 
 
     <Link href="/devices/add">Add Devices</Link>
-  </div>;
+  </Container>;
 };

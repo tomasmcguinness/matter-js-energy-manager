@@ -30,7 +30,7 @@
   "include": [
     "./src/**/*.ts",
     ".next/types/**/*.ts"
-, "src/server.js"  ],
+, "src/server.js", "matterServer.js", "global.ts"  ],
   "exclude": [
     "node_modules"
   ]

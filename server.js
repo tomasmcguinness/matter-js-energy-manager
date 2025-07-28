@@ -2,6 +2,7 @@ import { createServer } from 'http'
 import { parse } from 'url'
 import next from 'next'
 import { initializeSocketServer } from "./socketServer.js";
+import { initializeMatterServer } from "./matterServer.js";
 
 const port = parseInt(process.env.PORT || '3000', 10)
 const dev = process.env.NODE_ENV !== 'production'
@@ -16,6 +17,8 @@ app.prepare().then(() => {
   })
 
   const io = initializeSocketServer(httpServer);
+
+  const matterServer = initializeMatterServer();
 
   httpServer.listen(port);
 

@@ -1,17 +1,16 @@
 import { Server } from "socket.io";
 
-const io = null;
-
 export function getServer() {
     console.log("getServer");
-    console.log({io});
-    return io;
+    return globalThis.io;
 }
 
 export function initializeSocketServer(httpServer) {
-  if (!io) {
-    io = new Server(httpServer);
-    io.on("connection", (socket) => {
+  
+  if (!globalThis.io) {
+    
+    globalThis.io = new Server(httpServer);
+    globalThis.io.on("connection", (socket) => {
       console.log('Socket.io: a user connected');
       io.emit("hello", "world");
       socket.on("orderCreated", (order) => {
@@ -27,5 +26,6 @@ export function initializeSocketServer(httpServer) {
       });
     });
   }
-  return io;
+
+  return globalThis.io;
 }

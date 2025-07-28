@@ -1,4 +1,4 @@
-import { getController } from "../../services/matter.ts";
+import { getController } from "../../../../matterServer.js";
 import Device from '../../../device.js'
 import { GeneralCommissioning } from "@matter/main/clusters";
 import { ManualPairingCodeCodec } from "@matter/main/types";

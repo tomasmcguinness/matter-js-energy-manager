@@ -11,15 +11,16 @@ import {
     Legend,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
+import { Manager } from "socket.io-client";
 
 ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend
 );
 
 
@@ -32,36 +33,28 @@ const EnergyTimeline = ({ forecast }: EnergyTimelineProps) => {
     const [isConnected, setIsConnected] = useState(false);
     const [transport, setTransport] = useState("N/A");
 
-    // useEffect(() => {
-    //     if (socket.connected) {
-    //         onConnect();
-    //     }
+    useEffect(() => {
+        const manager = new Manager("http://localhost:3000", {
+            reconnectionDelayMax: 10000,
+        });
 
-    //     function onConnect() {
-    //         setIsConnected(true);
-    //         setTransport(socket.io.engine.transport.name);
+        const socket = manager.socket("/");
 
-    //         socket.io.engine.on("upgrade", (transport) => {
-    //             setTransport(transport.name);
-    //         });
-    //     }
+        manager.open((err) => {
+            if (err) {
+                // an error has occurred
+            } else {
+                // the connection was successfully established
+            }
+        });
 
-    //     function onDisconnect() {
-    //         setIsConnected(false);
-    //         setTransport("N/A");
-    //     }
+        socket.on("power", (power: number) => {
+            console.log("Power Update: " 
+                
+                + power); // 1
+        });
 
-    //     socket.on("connect", onConnect);
-    //     socket.on("disconnect", onDisconnect);
-    //     socket.on("power", (power: number) => {
-    //         console.log(power); // 1
-    //     });
-
-    //     return () => {
-    //         socket.off("connect", onConnect);
-    //         socket.off("disconnect", onDisconnect);
-    //     };
-    // }, []);
+    }, []);
 
     // Probably take this from a single location.
     //
@@ -101,7 +94,7 @@ const EnergyTimeline = ({ forecast }: EnergyTimelineProps) => {
                 <h3>Energy</h3>
                 <div className="slotsContainer">
                     {/* {slots} */}
-                    <p>Status: { isConnected ? "connected" : "disconnected" }</p>
+                    <p>Status: {isConnected ? "connected" : "disconnected"}</p>
                     <Line options={options} data={data} />
                 </div>
             </div>

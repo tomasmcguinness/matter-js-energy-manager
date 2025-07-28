@@ -1,6 +1,6 @@
 import { NodeId } from "@matter/main/types";
 import type { NextRequest } from 'next/server'
-import { getController } from "../../../../services/matter.ts";
+import { getController } from "../../../../../../matterServer.js";
 import { DeviceEnergyManagement } from "@matter/main/clusters";
 import { ClusterClientObj } from "@matter/main/protocol";
 import Device from "../../../../../device.ts";
