@@ -50,18 +50,18 @@ const EnergyTimeline = ({ forecast }: EnergyTimelineProps) => {
         });
 
         socket.on("power", (power: number) => {
-            console.log("Power Update: " 
-                
-                + power); // 1
+            console.log("Power Update: " + power); // 1
         });
 
     }, []);
+
+
 
     // Probably take this from a single location.
     //
     const start = Date.now();
 
-    var slots = forecast?.slots.map((s, index) => { return <div key={index} className="slot" style={{}}>Power {s.nominalPower / 1000000}kW</div> });
+    //var slots = forecast?.slots.map((s, index) => { return <div key={index} className="slot" style={{}}>Power {s.nominalPower / 1000000}kW</div> });
 
     const options = {
         responsive: true,

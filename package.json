@@ -3,8 +3,6 @@
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
         "@matter/main": "0.15.1",
-        "@mui/material": "^7.2.0",
-        "@mui/x-charts": "^8.9.0",
         "@project-chip/matter.js": "^0.15.1",
         "@project-chip/matter.js-tools": "^0.10.7",
         "bootstrap": "^5.3.7",
