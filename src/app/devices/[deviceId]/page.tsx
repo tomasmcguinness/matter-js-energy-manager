@@ -3,7 +3,7 @@
 import { use, useState, useEffect } from 'react';
 import EnergyTimeline from '../../../energyTimeline.tsx';
 import Device from '../../../device.ts';
-import { Button } from 'react-bootstrap';
+import { Button, Container } from 'react-bootstrap';
 
 export default function Page({
   params,
@@ -23,10 +23,10 @@ export default function Page({
     fetch(`/api/devices/${deviceId}/forecast?operation=adjustStartTime`, { method: "POST" });
   };
 
-  return <div>
+  return <Container>
     <h1>Node: {deviceId}</h1>
     <hr />
     {device && <EnergyTimeline forecast={device.forecast} />}
     <Button onClick={sendStartTimeAdjustment}>Delay Start</Button>
-  </div>;
+  </Container>;
 };

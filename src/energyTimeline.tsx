@@ -44,6 +44,7 @@ const EnergyTimeline = ({ forecast }: EnergyTimelineProps) => {
             if (err) {
                 // an error has occurred
             } else {
+                setIsConnected(true);
                 // the connection was successfully established
             }
         });
