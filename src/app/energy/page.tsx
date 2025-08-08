@@ -77,12 +77,6 @@ export default function Page() {
           ],
         };
       });
-
-      // if (chartRef.current) {
-      //   //chartRef.current.labels.push(Math.floor(Math.random() * 100));
-      //   chartRef.current.data.datasets[0].data.push([Math.floor(Math.random() * 100), power]);
-      //   chartRef.current.update();
-      // }
     });
 
   }, [chartRef]);
@@ -98,18 +92,6 @@ export default function Page() {
       },
     },
   };
-
-  // const labels: string[] = [];
-
-  // const data = {
-  //   labels,
-  //   datasets: [
-  //     {
-  //       label: "Power",
-  //       data: [],
-  //     }
-  //   ]
-  // };
 
   return <div>
     <h1>Energy</h1>
