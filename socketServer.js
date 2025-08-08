@@ -7,6 +7,8 @@ export function getServer() {
 
 export function initializeSocketServer(httpServer) {
   
+  console.log('initializeSocketServer()');
+  
   if (!globalThis.io) {
     
     globalThis.io = new Server(httpServer);

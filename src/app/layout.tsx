@@ -29,7 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {/* <Alert variant={'primary'}>
             Energy usage is being optimized....
           </Alert> */}
-          <div style={{ marginTop: '25px' }}>
+          <div style={{ padding: '25px' }}>
             {children}
           </div>
         {/* </Container> */}

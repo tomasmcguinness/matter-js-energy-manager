@@ -13,10 +13,8 @@ import {
   Title,
   Tooltip,
   Legend,
-  ChartData,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { KDFSR2_INFO } from '@matter/main/protocol';
 
 ChartJS.register(
   CategoryScale,
@@ -31,6 +29,18 @@ ChartJS.register(
 export default function Page() {
 
   const chartRef = useRef<'line'>(null);
+
+  const [chartData, setChartData] = useState({
+    labels: [],
+    datasets: [
+      {
+        label: 'Real-time Data',
+        data: [],
+        borderColor: 'rgba(75, 192, 192, 1)',
+        fill: false,
+      },
+    ],
+  });
 
   useEffect(() => {
 
@@ -52,13 +62,27 @@ export default function Page() {
 
     socket.on("power", (power: number) => {
       console.log("Power Update: " + power); // 1
-      console.log(chartRef.current);
 
-      if (chartRef.current) {
-        //chartRef.current.labels.push(Math.floor(Math.random() * 100));
-        chartRef.current.data.datasets[0].data.push([Math.floor(Math.random() * 100), power]);
-        chartRef.current.update();
-      }
+      setChartData((prevData) => {
+        const newLabels = [...prevData.labels, new Date().toLocaleTimeString()];
+        const newData = [...prevData.datasets[0].data, power];
+
+        return {
+          labels: newLabels.slice(-10), // Keep only the last 10 labels
+          datasets: [
+            {
+              ...prevData.datasets[0],
+              data: newData.slice(-10), // Keep only the last 10 data points
+            },
+          ],
+        };
+      });
+
+      // if (chartRef.current) {
+      //   //chartRef.current.labels.push(Math.floor(Math.random() * 100));
+      //   chartRef.current.data.datasets[0].data.push([Math.floor(Math.random() * 100), power]);
+      //   chartRef.current.update();
+      // }
     });
 
   }, [chartRef]);
@@ -70,30 +94,30 @@ export default function Page() {
         position: 'top' as const,
       },
       title: {
-        display: true,
-        text: 'Chart.js Line Chart',
+        display: false
       },
     },
   };
 
-  const labels: string[] = [];
+  // const labels: string[] = [];
 
-  const data = {
-    labels,
-    datasets: [
-      {
-        label: "Power",
-        data: [],
-      }
-    ]
-  };
+  // const data = {
+  //   labels,
+  //   datasets: [
+  //     {
+  //       label: "Power",
+  //       data: [],
+  //     }
+  //   ]
+  // };
 
   return <div>
-    <h1>Energy Forecast</h1>
+    <h1>Energy</h1>
+    <hr />
     <Card style={{ width: '100%' }}>
       <Card.Body>
         <Card.Title>Current</Card.Title>
-        <Line ref={chartRef} options={options} data={data} />
+        <Line options={options} data={chartData} />
       </Card.Body>
     </Card>
   </div>;

@@ -55,16 +55,12 @@ const EnergyTimeline = ({ forecast }: EnergyTimelineProps) => {
 
     }, []);
 
-
-
     // Probably take this from a single location.
     //
     const start = Date.now();
 
-    //var slots = forecast?.slots.map((s, index) => { return <div key={index} className="slot" style={{}}>Power {s.nominalPower / 1000000}kW</div> });
-
     const options = {
-        responsive: true,
+        responsive: false,
         plugins: {
             legend: {
                 position: 'top' as const,
@@ -94,7 +90,6 @@ const EnergyTimeline = ({ forecast }: EnergyTimelineProps) => {
             <div>
                 <h3>Energy</h3>
                 <div className="slotsContainer">
-                    {/* {slots} */}
                     <p>Status: {isConnected ? "connected" : "disconnected"}</p>
                     <Line options={options} data={data} />
                 </div>

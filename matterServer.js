@@ -106,13 +106,20 @@ export const initializeMatterServer = async () => {
 
         globalThis.matterServer = commissioningController;
 
+        function randomIntFromInterval(min, max) { // min and max included 
+            return Math.floor(Math.random() * (max - min + 1) + min);
+        }
+
+
         setInterval(function () {
             console.log('Ticking');
 
             let io = getServer();
 
             if (io) {
-                io.emit("power", 10);
+                const rndInt = randomIntFromInterval(100, 1000);
+
+                io.emit("power", rndInt);
             }
         }, 1000);
     }
