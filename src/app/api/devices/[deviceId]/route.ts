@@ -45,14 +45,26 @@ export async function GET(req: NextRequest, { params }: any) {
             let forecast = await deviceEnergyManagement.getForecastAttribute();
             console.log("Forecast");
             console.log("---------------------------------------");
-            console.log(forecast!.slots[0]);
+
+            if(forecast) {
+
+                device.forecast = {
+                    startTime: forecast!.startTime,
+                    endTime: forecast!.endTime,
+                    slots: forecast!.slots.map<Slot>(s => <Slot>{ nominalPower: s.nominalPower }  )
+                }
+
+                if(forecast.slots) {
+                    console.log(forecast!.slots[0]);
+                } else {
+                    console.log("No slots in forecast");
+                }
+            } else {
+                console.log("No forecast available");
+            }
             console.log("---------------------------------------");
 
-            device.forecast = {
-                startTime: forecast!.startTime,
-                endTime: forecast!.endTime,
-                slots: forecast!.slots.map<Slot>(s => <Slot>{ nominalPower: s.nominalPower }  )
-            }
+
         }
     }
 
