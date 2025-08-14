@@ -16,7 +16,7 @@ export async function GET(req: NextRequest, { params }: any) {
     const devices = node.getDevices();
     console.log({ devices });
 
-    var device : Device = { id: deviceId };
+    var device : Device = { id: deviceId, state: node.state.toString(), manufacturer: node.basicInformation?.manufacturerName?.toString() };
 
     //node.logStructure();
 
@@ -43,8 +43,10 @@ export async function GET(req: NextRequest, { params }: any) {
         if (deviceEnergyManagement !== undefined) {
 
             let forecast = await deviceEnergyManagement.getForecastAttribute();
-
+            console.log("Forecast");
+            console.log("---------------------------------------");
             console.log(forecast!.slots[0]);
+            console.log("---------------------------------------");
 
             device.forecast = {
                 startTime: forecast!.startTime,
@@ -55,4 +57,17 @@ export async function GET(req: NextRequest, { params }: any) {
     }
 
     return Response.json(device);
+}
+
+export async function DELETE(req: NextRequest, { params }: any) {
+
+    const { deviceId } = await params;
+
+    const nodeId = NodeId(deviceId);
+
+    let node = await (await getController()).getNode(nodeId);
+
+    await node.decommission();
+
+    return;
 }

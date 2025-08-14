@@ -2,18 +2,25 @@ import { getController } from "../../../../matterServer.js";
 import Device from '../../../device.js'
 import { GeneralCommissioning } from "@matter/main/clusters";
 import { ManualPairingCodeCodec } from "@matter/main/types";
-import { Diagnostic } from "@matter/main";
+import { Diagnostic, NodeId } from "@matter/main";
 import { NodeCommissioningOptions } from "@project-chip/matter.js";
 
 export async function GET(req: Request, res: any) {
-    const nodeDetails = (await getController()).getCommissionedNodesDetails();
+    let commissioningController = await getController();
+    const nodeDetails = commissioningController.getCommissionedNodes();
 
-    let devices : Device[] = nodeDetails.map(n => { return <Device> { id: n.nodeId.toString() } });
+    let mapResult : Promise<Device>[] = nodeDetails.map(async (nodeId) => { 
+        const node = await commissioningController.getNode(nodeId);
+        return <Device> { id: nodeId.toString(), state: node.state, manufacturer: node?.basicInformation?.manufacturerName?.toString() } 
+    });
+
+    const devices = await Promise.all(mapResult);
 
     return new Response(JSON.stringify(devices), { status: 200 })
 }
 
 export async function POST(request: Request) {
+
     let data = await request.json();
 
     let setupPin, shortDiscriminator;

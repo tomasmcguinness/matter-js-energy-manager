@@ -2,7 +2,7 @@ import { Environment, NodeId, StorageService } from "@matter/main";
 import { CommissioningController } from "@project-chip/matter.js";
 import { DeviceEnergyManagement } from "@matter/main/clusters";
 import { NodeStates } from "@project-chip/matter.js/device";
-import { getServer } from "./socketServer.js";
+import { getSocketServer } from "./socketServer.js";
 
 export function getController() {
     return globalThis.matterServer;
@@ -44,13 +44,13 @@ export const initializeMatterServer = async () => {
         nodes.forEach(async (nodeId) => {
             const node = await commissioningController.getNode(nodeId);
 
-            // node.events.attributeChanged.on(({ path: { nodeId, clusterId, endpointId, attributeName }, value }) =>
-            //     console.log(
-            //         `attributeChangedCallback ${nodeId}: Attribute ${endpointId}/${clusterId}/${attributeName} changed to ${Diagnostic.json(
-            //             value,
-            //         )}`,
-            //     ),
-            // );
+            node.events.attributeChanged.on(({ path: { nodeId, clusterId, endpointId, attributeName }, value }) =>
+                console.log(
+                    `attributeChangedCallback ${nodeId}: Attribute ${endpointId}/${clusterId}/${attributeName} changed to ${Diagnostic.json(
+                        value,
+                    )}`,
+                ),
+            );
 
             if (!node.isConnected) {
                 node.connect();
@@ -59,17 +59,14 @@ export const initializeMatterServer = async () => {
             node.events.stateChanged.on(async (info) => {
                 switch (info) {
                     case NodeStates.Connected:
-                        console.log(`state changed: Node ${nodeId} connected`);
+                        console.log(`state changed: Node ${nodeId} connected!`);
 
                         const devices = node.getDevices();
-
-                        //console.log({ devices });
 
                         if (devices[1] && devices[1].number === 2) {
 
                             console.log('Attempting to subscribe to the forecast');
 
-                            //const deviceEnergyManagement: ClusterClientObj<DeviceEnergyManagement.Complete> | undefined = devices[1].getClusterClient(DeviceEnergyManagement.Complete);
                             const deviceEnergyManagement = devices[1].getClusterClient(DeviceEnergyManagement.Complete);
 
                             if (deviceEnergyManagement !== undefined) {
@@ -89,15 +86,15 @@ export const initializeMatterServer = async () => {
                         }
 
                         break;
-                    // case NodeStates.Disconnected:
-                    //     console.log(`state changed: Node ${nodeId} disconnected`);
-                    //     break;
-                    // case NodeStates.Reconnecting:
-                    //     console.log(`state changed: Node ${nodeId} reconnecting`);
-                    //     break;
-                    // case NodeStates.WaitingForDeviceDiscovery:
-                    //     console.log(`state changed: Node ${nodeId} waiting for device discovery`);
-                    //     break;
+                    case NodeStates.Disconnected:
+                        console.log(`state changed: Node ${nodeId} disconnected`);
+                        break;
+                    case NodeStates.Reconnecting:
+                        console.log(`state changed: Node ${nodeId} reconnecting`);
+                        break;
+                    case NodeStates.WaitingForDeviceDiscovery:
+                        console.log(`state changed: Node ${nodeId} waiting for device discovery`);
+                        break;
                 }
             });
         });
@@ -110,15 +107,11 @@ export const initializeMatterServer = async () => {
             return Math.floor(Math.random() * (max - min + 1) + min);
         }
 
-
         setInterval(function () {
-            console.log('Ticking');
-
-            let io = getServer();
+            let io = getSocketServer();
 
             if (io) {
                 const rndInt = randomIntFromInterval(100, 1000);
-
                 io.emit("power", rndInt);
             }
         }, 1000);

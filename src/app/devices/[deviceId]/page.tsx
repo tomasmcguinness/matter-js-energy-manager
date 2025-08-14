@@ -23,10 +23,15 @@ export default function Page({
     fetch(`/api/devices/${deviceId}/forecast?operation=adjustStartTime`, { method: "POST" });
   };
 
+  const unpairDevice = () => {
+    fetch(`/api/devices/${deviceId}`, { method: "DELETE" });
+  };
+
   return <Container>
     <h1>Node: {deviceId}</h1>
     <hr />
     {device && <EnergyTimeline forecast={device.forecast} />}
     <Button onClick={sendStartTimeAdjustment}>Delay Start</Button>
+    <Button onClick={unpairDevice}>Unpair Device</Button>
   </Container>;
 };

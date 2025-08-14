@@ -1,12 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react';
-import { Device } from '../../device.js'
 import Table from 'react-bootstrap/Table';
 import Link from 'next/link'
 import Spinner from 'react-bootstrap/Spinner';
-import Badge from 'react-bootstrap/Badge'; 
+import Badge from 'react-bootstrap/Badge';
 import Container from 'react-bootstrap/Container';
+import { NodeStates, PairedNode } from '@project-chip/matter.js/device';
+import { stat } from 'fs';
 
 export default function Page() {
 
@@ -18,12 +19,32 @@ export default function Page() {
   }, []);
 
   const handleRowClick = (device: Device) => {
-    console.log({ device });
     location.href = `/devices/${device.id}`;
   }
 
+  const getStateBadge = (state: NodeStates): any => {
+    var stateBadge: any = null;
+
+    switch (state) {
+      case NodeStates.Connected:
+        stateBadge = <Badge bg="success">Connected</Badge>;
+        break;
+      case NodeStates.Disconnected:
+        stateBadge = <Badge bg="success">Disconnected</Badge>;
+        break;
+      case NodeStates.Reconnecting:
+        stateBadge = <Badge bg="success">Reconnecting</Badge>;
+        break;
+      case NodeStates.WaitingForDeviceDiscovery:
+        stateBadge = <Badge bg="success">WaitingForDeviceDiscovery</Badge>;
+        break;
+    }
+
+    return stateBadge;
+  }
+
   const deviceTRs = devices.map((device) =>
-    <tr key={device.id} style={{ cursor: 'pointer' }} onClick={() => handleRowClick(device)}><td>{device.id}</td><td><Badge pill bg="primary">Primary</Badge></td></tr>
+    <tr key={device.id} style={{ cursor: 'pointer' }} onClick={() => handleRowClick(device)}><td>{device.id}</td><td style={{width:'1%'}}>{getStateBadge(device.state)}</td></tr>
   );
 
   return <Container>
@@ -34,7 +55,7 @@ export default function Page() {
         <thead>
           <tr>
             <th>Id</th>
-            <th />
+            <th>Status</th>
           </tr>
         </thead>
         <tbody>
@@ -44,7 +65,6 @@ export default function Page() {
       : <Spinner animation="border" role="status">
         <span className="visually-hidden">Loading commissioned devices...</span>
       </Spinner>}
-
 
     <Link href="/devices/add">Add Devices</Link>
   </Container>;

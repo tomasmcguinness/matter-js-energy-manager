@@ -1,14 +1,13 @@
 import { Server } from "socket.io";
 
-export function getServer() {
-    console.log("getServer");
+export function getSocketServer() {
     return globalThis.io;
 }
 
 export function initializeSocketServer(httpServer) {
   
   console.log('initializeSocketServer()');
-  
+
   if (!globalThis.io) {
     
     globalThis.io = new Server(httpServer);
