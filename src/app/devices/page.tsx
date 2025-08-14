@@ -6,8 +6,8 @@ import Link from 'next/link'
 import Spinner from 'react-bootstrap/Spinner';
 import Badge from 'react-bootstrap/Badge';
 import Container from 'react-bootstrap/Container';
-import { NodeStates, PairedNode } from '@project-chip/matter.js/device';
-import { stat } from 'fs';
+import { NodeStates } from '@project-chip/matter.js/device';
+import { Manager } from 'socket.io-client';
 
 export default function Page() {
 
@@ -16,6 +16,36 @@ export default function Page() {
 
   useEffect(() => {
     fetch('/api/devices').then(r => r.json()).then(data => { setDevices(data); setIsLoading(false); });
+  }, []);
+
+  useEffect(() => {
+
+    const manager = new Manager("http://localhost:3000", {
+      reconnectionDelayMax: 10000,
+    });
+
+    const socket = manager.socket("/");
+
+    manager.open((err: any) => {
+      if (err) {
+        // an error has occurred
+      } else {
+        // the connection was successfully established
+        console.log("Socket connection established");
+      }
+    });
+
+    socket.on("power", (power: number) => {
+      console.log("Power Update: " + power);
+    });
+
+    socket.on("status", (nodeId: number) => {
+      console.log("Status Update: " + nodeId);
+    });
+
+    socket.on("forecast", (forecast: any) => {
+      console.log("Forecast Updated: " + forecast.forecastId);
+    });
   }, []);
 
   const handleRowClick = (device: Device) => {

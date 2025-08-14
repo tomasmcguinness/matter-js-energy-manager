@@ -3,6 +3,7 @@ import { CommissioningController } from "@project-chip/matter.js";
 import { DeviceEnergyManagement } from "@matter/main/clusters";
 import { NodeStates } from "@project-chip/matter.js/device";
 import { getSocketServer } from "./socketServer.js";
+import { io } from "socket.io-client";
 
 export function getController() {
     return globalThis.matterServer;
@@ -41,6 +42,8 @@ export const initializeMatterServer = async () => {
 
         let nodes = await commissioningController.getCommissionedNodes();
 
+        let io = getSocketServer();
+
         nodes.forEach(async (nodeId) => {
             const node = await commissioningController.getNode(nodeId);
 
@@ -61,6 +64,8 @@ export const initializeMatterServer = async () => {
                     case NodeStates.Connected:
                         console.log(`state changed: Node ${nodeId} connected!`);
 
+                        io.emit("status", nodeId.toString());
+
                         const devices = node.getDevices();
 
                         if (devices[1] && devices[1].number === 2) {
@@ -74,12 +79,15 @@ export const initializeMatterServer = async () => {
                                 let forecast = await deviceEnergyManagement.getForecastAttribute();
 
                                 console.log({ forecast });
+                                io.emit("forecast", forecast);
 
                                 console.log('Subscribing to the forecast...');
 
                                 deviceEnergyManagement.addForecastAttributeListener(value => {
                                     console.log("Forecast Updated", value);
+                                    io.emit("forecast", value);
                                 });
+
                             } else {
                                 console.error('No cluster client...');
                             }
@@ -88,12 +96,15 @@ export const initializeMatterServer = async () => {
                         break;
                     case NodeStates.Disconnected:
                         console.log(`state changed: Node ${nodeId} disconnected`);
+                        io.emit("status", nodeId.toString());
                         break;
                     case NodeStates.Reconnecting:
                         console.log(`state changed: Node ${nodeId} reconnecting`);
+                        io.emit("status", nodeId.toString());
                         break;
                     case NodeStates.WaitingForDeviceDiscovery:
                         console.log(`state changed: Node ${nodeId} waiting for device discovery`);
+                        io.emit("status", nodeId.toString());
                         break;
                 }
             });
