@@ -1,4 +1,4 @@
-import { Environment, NodeId, StorageService } from "@matter/main";
+import { Environment, StorageService } from "@matter/main";
 import { CommissioningController } from "@project-chip/matter.js";
 import { DeviceEnergyManagement } from "@matter/main/clusters";
 import { NodeStates } from "@project-chip/matter.js/device";
@@ -44,13 +44,13 @@ export const initializeMatterServer = async () => {
         nodes.forEach(async (nodeId) => {
             const node = await commissioningController.getNode(nodeId);
 
-            node.events.attributeChanged.on(({ path: { nodeId, clusterId, endpointId, attributeName }, value }) =>
-                console.log(
-                    `attributeChangedCallback ${nodeId}: Attribute ${endpointId}/${clusterId}/${attributeName} changed to ${Diagnostic.json(
-                        value,
-                    )}`,
-                ),
-            );
+            // node.events.attributeChanged.on(({ path: { nodeId, clusterId, endpointId, attributeName }, value }) =>
+            //     console.log(
+            //         `attributeChangedCallback ${nodeId}: Attribute ${endpointId}/${clusterId}/${attributeName} changed to ${Diagnostic.json(
+            //             value,
+            //         )}`,
+            //     ),
+            // );
 
             if (!node.isConnected) {
                 node.connect();
