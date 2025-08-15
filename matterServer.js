@@ -68,6 +68,7 @@ export const initializeMatterServer = async () => {
 
                         const devices = node.getDevices();
 
+                        // TODO Find the DeviceEnergyManagement dynamically cluster
                         if (devices[1] && devices[1].number === 2) {
 
                             console.log('Attempting to subscribe to the forecast');

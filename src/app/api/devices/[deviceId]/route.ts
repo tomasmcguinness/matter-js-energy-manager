@@ -62,9 +62,8 @@ export async function GET(req: NextRequest, { params }: any) {
             } else {
                 console.log("No forecast available");
             }
+
             console.log("---------------------------------------");
-
-
         }
     }
 
