@@ -16,7 +16,7 @@ export default function Page() {
   const [devices, setDevices] = useState<Device[]>([]);
 
   useEffect(() => {
-    fetch('/api/devices').then(r => r.json()).then(data => { setDevices(data); setIsLoading(false); });
+    fetch('http://localhost:3000/devices').then(r => r.json()).then(data => { setDevices(data); setIsLoading(false); });
   }, []);
 
   useEffect(() => {

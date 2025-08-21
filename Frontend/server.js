@@ -5,7 +5,7 @@ import { initializeSocketServer } from "./socketServer.js";
 import { initializeMatterServer } from "./matterServer.js";
 import { initializeEnergyManager } from "./energyManager.js";
 
-const port = parseInt(process.env.PORT || '3000', 10)
+const port = parseInt(process.env.PORT || '3001', 10)
 const dev = process.env.NODE_ENV !== 'production'
 const app = next({ dev })
 const handle = app.getRequestHandler()
@@ -17,11 +17,11 @@ app.prepare().then(() => {
     handle(req, res, parsedUrl)
   })
 
-  initializeSocketServer(httpServer);
+  //initializeSocketServer(httpServer);
 
-  initializeMatterServer();
+  //initializeMatterServer();
 
-  initializeEnergyManager();
+  //initializeEnergyManager();
 
   httpServer.listen(port);
 

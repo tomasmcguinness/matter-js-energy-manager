@@ -5,10 +5,16 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "type": "module",
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "express": "^5.1.0"
+    "@matter/main": "^0.15.3",
+    "@project-chip/matter.js": "^0.15.1",
+    "@project-chip/matter.js-tools": "^0.10.7",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "socket.io": "^4.8.1"
   }
 }
