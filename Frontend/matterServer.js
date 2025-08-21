@@ -3,7 +3,7 @@ import { CommissioningController } from "@project-chip/matter.js";
 import { DeviceEnergyManagement } from "@matter/main/clusters";
 import { NodeStates } from "@project-chip/matter.js/device";
 import { getSocketServer } from "./socketServer.js";
-import { io } from "socket.io-client";
+import { getEnergyManager} from "./energyManager.js"
 
 export function getController() {
     return globalThis.matterServer;
@@ -14,6 +14,8 @@ export const initializeMatterServer = async () => {
     if (!globalThis.matterServer) {
 
         console.log("Initializing Matter Server...");
+
+        const energyManager = getEnergyManager();
 
         const environment = Environment.default;
 
@@ -69,24 +71,29 @@ export const initializeMatterServer = async () => {
                         const devices = node.getDevices();
 
                         // TODO Find the DeviceEnergyManagement dynamically cluster
+                        // If a device even has one.
+                        //
                         if (devices[1] && devices[1].number === 2) {
 
                             console.log('Attempting to subscribe to the forecast');
 
                             const deviceEnergyManagement = devices[1].getClusterClient(DeviceEnergyManagement.Complete);
 
-                            if (deviceEnergyManagement !== undefined) {
+                            if (deviceEnergyManagement) {
 
                                 let forecast = await deviceEnergyManagement.getForecastAttribute();
 
                                 console.log({ forecast });
-                                io.emit("forecast", forecast);
+
+                                energyManager.processForecast(nodeId, forecast);
+
+//                                io.emit("forecast", forecast);
 
                                 console.log('Subscribing to the forecast...');
 
                                 deviceEnergyManagement.addForecastAttributeListener(value => {
                                     console.log("Forecast Updated", value);
-                                    io.emit("forecast", value);
+                                    //io.emit("forecast", value);
                                 });
 
                             } else {

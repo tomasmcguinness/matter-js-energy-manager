@@ -44,8 +44,6 @@ export default function Page() {
 
   useEffect(() => {
 
-    console.log(chartRef.current);
-
     const manager = new Manager("http://localhost:3000", {
       reconnectionDelayMax: 10000,
     });
@@ -82,9 +80,10 @@ export default function Page() {
   }, [chartRef]);
 
   const options = {
-    responsive: true,
+    responsive: false,
     plugins: {
       legend: {
+        display: false,
         position: 'top' as const,
       },
       title: {
@@ -96,9 +95,9 @@ export default function Page() {
   return <div>
     <h1>Energy</h1>
     <hr />
-    <Card style={{ width: '100%' }}>
+    <Card style={{ width: '100%', height: '300px' }}>
       <Card.Body>
-        <Card.Title>Current</Card.Title>
+        {/* <Card.Title>Current</Card.Title> */}
         <Line options={options} data={chartData} />
       </Card.Body>
     </Card>

@@ -6,6 +6,7 @@ import Link from 'next/link'
 import Spinner from 'react-bootstrap/Spinner';
 import Badge from 'react-bootstrap/Badge';
 import Container from 'react-bootstrap/Container';
+import Alert from 'react-bootstrap/Alert';
 import { NodeStates } from '@project-chip/matter.js/device';
 import { Manager } from 'socket.io-client';
 
@@ -77,11 +78,19 @@ export default function Page() {
     <tr key={device.id} style={{ cursor: 'pointer' }} onClick={() => handleRowClick(device)}><td>{device.id}</td><td style={{width:'1%'}}>{getStateBadge(device.state)}</td></tr>
   );
 
-  return <Container>
-    <h1>Commissioned Devices</h1>
-    <hr />
-    {!isLoading
-      ? <Table striped bordered hover>
+  var body = null;
+
+  if(isLoading) {
+    body = <Spinner animation="grow" variant="primary">
+        <span className="visually-hidden">Loading commissioned devices...</span>
+      </Spinner>;
+  }
+  else
+  {
+    if(deviceTRs.length == 0) {
+      body = <Alert variant="info">No devices have been commissioned. We cannot use Bluetooth to commission a device, so open the Pairing Windows using another device.</Alert>
+    } else {
+      body = <Table striped bordered hover>
         <thead>
           <tr>
             <th>Id</th>
@@ -91,11 +100,14 @@ export default function Page() {
         <tbody>
           {deviceTRs}
         </tbody>
-      </Table>
-      : <Spinner animation="border" role="status">
-        <span className="visually-hidden">Loading commissioned devices...</span>
-      </Spinner>}
+      </Table>;
+    }
+  }
 
-    <Link href="/devices/add">Add Devices</Link>
+  return <Container>
+    <h1>Devices</h1>
+    <hr />
+    {body}
+    <Link href="/devices/add">Add Device</Link>
   </Container>;
 };

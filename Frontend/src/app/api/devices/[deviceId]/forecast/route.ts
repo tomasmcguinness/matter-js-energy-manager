@@ -5,6 +5,28 @@ import { DeviceEnergyManagement } from "@matter/main/clusters";
 import { ClusterClientObj } from "@matter/main/protocol";
 import Device from "../../../../../device.ts";
 
+export async function GET(req: NextRequest, { params }: any) {
+
+    const { deviceId } = await params;
+
+    const nodeId = NodeId(deviceId);
+
+    let node = await (await getController()).getNode(nodeId);
+
+    const devices = node.getDevices();
+
+    if (devices[1] && devices[1].number === 2) {
+
+        const deviceEnergyManagement: ClusterClientObj<DeviceEnergyManagement.Complete> | undefined = devices[1].getClusterClient(DeviceEnergyManagement.Complete);
+
+        if (deviceEnergyManagement) {
+            return Response.json({});
+        }
+    }
+
+    return Response.json(null);
+}
+
 export async function POST(req: NextRequest, { params }: any) {
 
     const { deviceId } = await params;
@@ -21,7 +43,9 @@ export async function POST(req: NextRequest, { params }: any) {
 
         const deviceEnergyManagement: ClusterClientObj<DeviceEnergyManagement.Complete> | undefined = devices[1].getClusterClient(DeviceEnergyManagement.Complete);
 
-        if (deviceEnergyManagement !== undefined) {
+        // Can pause?
+        //
+        if (deviceEnergyManagement) {
             await deviceEnergyManagement.startTimeAdjustRequest({
                 requestedStartTime: 1753335036, 
                 cause: DeviceEnergyManagement.AdjustmentCause.LocalOptimization

@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { Forecast } from "./device.ts";
 import {
     Chart as ChartJS,
@@ -10,8 +9,6 @@ import {
     Tooltip,
     Legend,
 } from 'chart.js';
-import { Line } from 'react-chartjs-2';
-import { Manager } from "socket.io-client";
 
 ChartJS.register(
     CategoryScale,
@@ -22,7 +19,6 @@ ChartJS.register(
     Tooltip,
     Legend
 );
-
 
 type EnergyTimelineProps = {
     forecast?: Forecast;

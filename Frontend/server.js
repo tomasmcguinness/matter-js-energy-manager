@@ -3,6 +3,7 @@ import { parse } from 'url'
 import next from 'next'
 import { initializeSocketServer } from "./socketServer.js";
 import { initializeMatterServer } from "./matterServer.js";
+import { initializeEnergyManager } from "./energyManager.js";
 
 const port = parseInt(process.env.PORT || '3000', 10)
 const dev = process.env.NODE_ENV !== 'production'
@@ -16,9 +17,11 @@ app.prepare().then(() => {
     handle(req, res, parsedUrl)
   })
 
-  const io = initializeSocketServer(httpServer);
+  initializeSocketServer(httpServer);
 
-  const matterServer = initializeMatterServer();
+  initializeMatterServer();
+
+  initializeEnergyManager();
 
   httpServer.listen(port);
 
