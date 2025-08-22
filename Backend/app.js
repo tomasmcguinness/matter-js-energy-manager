@@ -38,106 +38,106 @@ server.listen(PORT, () => {
 /*
  * Stand up the Matter Controller
  */
-const environment = Environment.default;
+// const environment = Environment.default;
 
-const storageService = environment.get(StorageService);
+// const storageService = environment.get(StorageService);
 
-const uniqueId = "EnergyManager";
+// const uniqueId = "EnergyManager";
 
-const adminFabricLabel = "matter.js Controller";
+// const adminFabricLabel = "matter.js Controller";
 
-const commissioningController = new CommissioningController({
-    environment: {
-        environment,
-        id: uniqueId,
-    },
-    autoConnect: false, // Do not auto connect to the commissioned nodes
-    adminFabricLabel,
-});
+// const commissioningController = new CommissioningController({
+//     environment: {
+//         environment,
+//         id: uniqueId,
+//     },
+//     autoConnect: false, // Do not auto connect to the commissioned nodes
+//     adminFabricLabel,
+// });
 
-const controllerStorage = (await storageService.open("controller")).createContext("data");
+//const controllerStorage = (await storageService.open("controller")).createContext("data");
 
-await controllerStorage.set("fabriclabel", adminFabricLabel);
+//await controllerStorage.set("fabriclabel", adminFabricLabel);
 
-console.log(`Starting controller...`);
+//console.log(`Starting controller...`);
 
-await commissioningController.start();
+// await commissioningController.start();
 
-let nodes = await commissioningController.getCommissionedNodes();
+// let nodes = await commissioningController.getCommissionedNodes();
 
-nodes.forEach(async (nodeId) => {
-    const node = await commissioningController.getNode(nodeId);
+// nodes.forEach(async (nodeId) => {
+//     const node = await commissioningController.getNode(nodeId);
 
-    // node.events.attributeChanged.on(({ path: { nodeId, clusterId, endpointId, attributeName }, value }) =>
-    //     console.log(
-    //         `attributeChangedCallback ${nodeId}: Attribute ${endpointId}/${clusterId}/${attributeName} changed to ${Diagnostic.json(
-    //             value,
-    //         )}`,
-    //     ),
-    // );
+//     // node.events.attributeChanged.on(({ path: { nodeId, clusterId, endpointId, attributeName }, value }) =>
+//     //     console.log(
+//     //         `attributeChangedCallback ${nodeId}: Attribute ${endpointId}/${clusterId}/${attributeName} changed to ${Diagnostic.json(
+//     //             value,
+//     //         )}`,
+//     //     ),
+//     // );
 
-    if (!node.isConnected) {
-        node.connect();
-    }
+//     if (!node.isConnected) {
+//         node.connect();
+//     }
 
-    node.events.stateChanged.on(async (info) => {
-        switch (info) {
-            case NodeStates.Connected:
-                console.log(`state changed: Node ${nodeId} connected!`);
+//     node.events.stateChanged.on(async (info) => {
+//         switch (info) {
+//             case NodeStates.Connected:
+//                 console.log(`state changed: Node ${nodeId} connected!`);
 
-                io.emit("status", nodeId.toString());
+//                 io.emit("status", nodeId.toString());
 
-                const devices = node.getDevices();
+//                 const devices = node.getDevices();
 
-                // TODO Find the DeviceEnergyManagement dynamically cluster
-                // If a device even has one.
-                //
-                if (devices[1] && devices[1].number === 2) {
+//                 // TODO Find the DeviceEnergyManagement dynamically cluster
+//                 // If a device even has one.
+//                 //
+//                 if (devices[1] && devices[1].number === 2) {
 
-                    console.log('Attempting to subscribe to the forecast');
+//                     console.log('Attempting to subscribe to the forecast');
 
-                    const deviceEnergyManagement = devices[1].getClusterClient(DeviceEnergyManagement.Complete);
+//                     const deviceEnergyManagement = devices[1].getClusterClient(DeviceEnergyManagement.Complete);
 
-                    if (deviceEnergyManagement) {
+//                     if (deviceEnergyManagement) {
 
-                        let forecast = await deviceEnergyManagement.getForecastAttribute();
+//                         let forecast = await deviceEnergyManagement.getForecastAttribute();
 
-                        console.log({ forecast });
+//                         console.log({ forecast });
 
-                        energyManager.processForecast(nodeId, forecast);
+//                         energyManager.processForecast(nodeId, forecast);
 
-                        //                                io.emit("forecast", forecast);
+//                         //                                io.emit("forecast", forecast);
 
-                        console.log('Subscribing to the forecast...');
+//                         console.log('Subscribing to the forecast...');
 
-                        deviceEnergyManagement.addForecastAttributeListener(value => {
-                            console.log("Forecast Updated", value);
-                            //io.emit("forecast", value);
-                        });
+//                         deviceEnergyManagement.addForecastAttributeListener(value => {
+//                             console.log("Forecast Updated", value);
+//                             //io.emit("forecast", value);
+//                         });
 
-                    } else {
-                        console.error('No cluster client...');
-                    }
-                }
+//                     } else {
+//                         console.error('No cluster client...');
+//                     }
+//                 }
 
-                break;
-            case NodeStates.Disconnected:
-                console.log(`state changed: Node ${nodeId} disconnected`);
-                io.emit("status", nodeId.toString());
-                break;
-            case NodeStates.Reconnecting:
-                console.log(`state changed: Node ${nodeId} reconnecting`);
-                io.emit("status", nodeId.toString());
-                break;
-            case NodeStates.WaitingForDeviceDiscovery:
-                console.log(`state changed: Node ${nodeId} waiting for device discovery`);
-                io.emit("status", nodeId.toString());
-                break;
-        }
-    });
-});
+//                 break;
+//             case NodeStates.Disconnected:
+//                 console.log(`state changed: Node ${nodeId} disconnected`);
+//                 io.emit("status", nodeId.toString());
+//                 break;
+//             case NodeStates.Reconnecting:
+//                 console.log(`state changed: Node ${nodeId} reconnecting`);
+//                 io.emit("status", nodeId.toString());
+//                 break;
+//             case NodeStates.WaitingForDeviceDiscovery:
+//                 console.log(`state changed: Node ${nodeId} waiting for device discovery`);
+//                 io.emit("status", nodeId.toString());
+//                 break;
+//         }
+//     });
+// });
 
-console.log(`Commissioning controller started with id ${uniqueId} and label "${adminFabricLabel}"`);
+// console.log(`Commissioning controller started with id ${uniqueId} and label "${adminFabricLabel}"`);
 
 app.get("/devices", async (request, response) => {
 
@@ -157,10 +157,82 @@ app.get("/optimise", async (request, response) => {
     response.send({});
 });
 
+// let forecast = {
+//     slots: [{ nominalPower: 3000, duration: 30 }, { nominalPower: 1000, duration: 60 }, { nominalPower: 1500, duration: 30 }]
+// };
+
+let forecast = {
+    // Basic forecast: 3kW nominal consumption for 2 hours
+    //
+    slots: [{ nominalPower: 3000, duration: 120 }]
+};
+let tariff = [28, 28, 7.5, 7.5, 7.5, 7.5, 28, 28];
+
+app.get("/tariff", async (request, response) => {
+    response.send(tariff);
+})
+
 app.post("/optimise", async (request, response) => {
 
     // TODO The routine to perform the optimization based on the current 
     // forecasts.
+
+    // Ideas:
+    // Do minute by minute?
+    // Use costs as the signal of efficiency.
+    // Test the cost of the forecast by simulating
+
+    //var currentTime = new Date().getTime();
+
+    // Turn tariff into a timeseries.
+    //
+    let tariffTimeSeries = tariff.reduce((accumulator, currentValue) => {
+
+        for (var i = 0; i < 30; i++) {
+            accumulator.push(currentValue);
+        }
+
+        return accumulator;
+    }, []);
+
+    let dishwasherTimeSeries = forecast.slots.reduce((accumulator, currentValue) => {
+
+        for (var i = 0; i < currentValue.duration; i++) {
+            accumulator.push(currentValue.nominalPower);
+        }
+
+        return accumulator;
+    }, []);
+
+    // Don't delay by more than four hours?
+    //
+    for (var simulationNumber = 0; simulationNumber < 120; simulationNumber++) {
+
+        // Calculate the cost of the running the dishwasher at this specific offset.
+        //
+        var totalCostInPennies = dishwasherTimeSeries.reduce((accumulator, power, index) => {
+
+            // Get the price.
+            //
+            var currentUnitPrice = tariffTimeSeries[index + simulationNumber];
+
+            // Each tick is one minute. 
+            //
+            let powerInKiloWatt = power / 1000;
+            let price = (powerInKiloWatt / 60) * currentUnitPrice;
+
+            return accumulator + price;
+        }, 0);
+
+
+        console.log(`[${simulationNumber}] Total Cost: ${Math.floor(totalCostInPennies)}p`);
+    }
+
+
+    // let tariffTimeSeries = tariff.map(t => {
+    //     // Each block lasts 30 minutes.
+    //     //
+    // })
 
     response.send({});
 });

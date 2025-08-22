@@ -3,18 +3,21 @@
 import Card from 'react-bootstrap/Card';
 import TariffTimeline from '../../tariffTimeline.tsx';
 import ForecastTimeline from '../../forecastTimeline.tsx';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function Page() {
 
   const [isOptimising, setIsOptimising] = useState<boolean>(false);
+  const [prices, setPrices] = useState<number[]>([]);
 
   // TODO Fetch this forecast
   let forecast = {
     slots: [{ nominalPower: 3000, duration: 30 }, { nominalPower: 1000, duration: 60 }, { nominalPower: 1500, duration: 30 }]
   };
 
-  // TODO Fetch the current tariff
+   useEffect(() => {
+    fetch('http://localhost:3000/tariff').then(r => r.json()).then(data => { setPrices(data); });
+  }, []);
 
   const handleOptimiseClick = () => {
     setIsOptimising(true);
@@ -30,7 +33,7 @@ export default function Page() {
       <Card style={{ width: '100%', marginBottom: '10px' }}>
         <Card.Body>
           <Card.Title>Tariff</Card.Title>
-          <TariffTimeline />
+          <TariffTimeline prices={prices} />
         </Card.Body>
       </Card>
 
