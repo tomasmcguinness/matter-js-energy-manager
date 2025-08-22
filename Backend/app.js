@@ -157,10 +157,6 @@ app.get("/optimise", async (request, response) => {
     response.send({});
 });
 
-// let forecast = {
-//     slots: [{ nominalPower: 3000, duration: 30 }, { nominalPower: 1000, duration: 60 }, { nominalPower: 1500, duration: 30 }]
-// };
-
 var forecast = {
     // Basic forecast: 3kW nominal consumption for 2 hours
     //
@@ -239,16 +235,16 @@ app.post("/optimise", async (request, response) => {
 
     // Based on the cheapest simulation, perform the actions
     //
-    let cheapestSimulator = simulationOutcomes.reduce((min, obj) => {
-        return obj["totalCost"] < min ? obj["totalCost"] : min;
-    }, Infinity);
+    let cheapestSimulation = simulationOutcomes.reduce((min, obj) => {
+        return min.totalCost < obj.totalCost ? min : obj;
+    });
 
-    console.log({cheapestSimulator});
+    console.log({cheapestSimulation});
 
     // TODO Send a delayed start command to the device.
     // For now, adjust the forecast.
     //
-    forecast.startTime = cheapestSimulator.id;
+    forecast.startTime = cheapestSimulation.id;
 
     io.emit("forecast", forecast);
 

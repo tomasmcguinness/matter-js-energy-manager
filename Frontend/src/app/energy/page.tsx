@@ -6,6 +6,7 @@ import ForecastTimeline from '../../forecastTimeline.tsx';
 import { useEffect, useState } from 'react';
 import { Forecast } from '../../device.ts';
 import { Manager } from 'socket.io-client';
+import Spinner from 'react-bootstrap/Spinner';
 
 export default function Page() {
 
@@ -47,7 +48,9 @@ export default function Page() {
   return <div>
     <h1>Energy Forecast</h1>
     <hr />
-    {isOptimising ?? <div className="alert alert-info">Optimising Energy Usage</div>}
+    {isOptimising && <div className="alert alert-info">
+      Optimising Energy Usage
+    </div>}
     <div style={{ position: 'relative' }}>
 
       <Card style={{ width: '100%', marginBottom: '10px' }}>
