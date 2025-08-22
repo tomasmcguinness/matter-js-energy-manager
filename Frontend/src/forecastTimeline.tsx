@@ -28,20 +28,24 @@ const ForecastTimeline = ({ forecast }: EnergyTimelineProps) => {
 
     console.log("Rendering EnergyTimeline with forecast:", forecast);
 
-    const start = Date.now();
+    if (forecast == null) {
+        return <div className="alert alert-info" style={{ marginBottom: '0' }}>No Energy Usage Forecast</div>;
+    }
 
-    let slots = forecast?.slots.map((slot, index) => {
+    let slots = forecast.slots.map((slot, index) => {
         const key = `slot_${index}`;
         const width = slot.duration * 3.33;
-        return <div className="slot" key={key} style={{width: `${width}px`}}>{index}</div>;
+        return <div className="slot" key={key} style={{ width: `${width}px` }}>{index}</div>;
     });
 
+    if (forecast.startTime > 0) {
+        slots.splice(0, 0, <div className="slot hatched" key="delay" style={{ width: `${forecast.startTime * 3.33}px` }}></div>)
+    }
+
     return <div className="energyForecastContainer">
-        {(forecast == null || forecast == undefined) ? <div className="alert alert-info" style={{ marginBottom: '0' }}>No Energy Usage Forecast</div> :
-            <div className="slotsContainer">
-                {slots}
-            </div>
-        }
+        <div className="slotsContainer">
+            {slots}
+        </div>
     </div>;
 }
 

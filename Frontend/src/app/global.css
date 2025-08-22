@@ -16,7 +16,26 @@
     border-right-width: 0;
     width: 100px;
     padding: 10px;
-    text-align: center;
+    text-align: center;    
+    overflow: hidden;
+}
+
+.energyForecastContainer .slotsContainer .slot.hatched {
+    background-color: gray;
+    opacity: 0.8;
+    /* background: repeating-linear-gradient( -45deg, #000000, #000000 2px, #ffffff 2px, #ffffff 5px ); */
+
+}
+
+.energyForecastContainer .slotsContainer .slot.hatched span { 
+    background-color: #ffffff;
+    text-transform: uppercase;
+    color: #000;
+    padding-left: 10px;
+    padding-right: 10px;
+    text-overflow: hidden;
+    white-space: nowrap;
+    overflow-x: none;
 }
 
 .energyForecastContainer .slotsContainer .slot:last-child {

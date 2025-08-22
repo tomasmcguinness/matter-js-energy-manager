@@ -161,15 +161,21 @@ app.get("/optimise", async (request, response) => {
 //     slots: [{ nominalPower: 3000, duration: 30 }, { nominalPower: 1000, duration: 60 }, { nominalPower: 1500, duration: 30 }]
 // };
 
-let forecast = {
+var forecast = {
     // Basic forecast: 3kW nominal consumption for 2 hours
     //
+    startTime: 5,
     slots: [{ nominalPower: 3000, duration: 120 }]
 };
+
 let tariff = [28, 28, 7.5, 7.5, 7.5, 7.5, 28, 28];
 
 app.get("/tariff", async (request, response) => {
     response.send(tariff);
+})
+
+app.get("/forecast", async (request, response) => {
+    response.send(forecast);
 })
 
 app.post("/optimise", async (request, response) => {
@@ -204,6 +210,8 @@ app.post("/optimise", async (request, response) => {
         return accumulator;
     }, []);
 
+    let simulationOutcomes = [];
+
     // Don't delay by more than four hours?
     //
     for (var simulationNumber = 0; simulationNumber < 120; simulationNumber++) {
@@ -212,7 +220,7 @@ app.post("/optimise", async (request, response) => {
         //
         var totalCostInPennies = dishwasherTimeSeries.reduce((accumulator, power, index) => {
 
-            // Get the price.
+            // Get the price, offseting by one minute for each simulator.
             //
             var currentUnitPrice = tariffTimeSeries[index + simulationNumber];
 
@@ -224,15 +232,25 @@ app.post("/optimise", async (request, response) => {
             return accumulator + price;
         }, 0);
 
+        simulationOutcomes.push({id: simulationNumber, totalCost: Math.floor(totalCostInPennies)});
 
-        console.log(`[${simulationNumber}] Total Cost: ${Math.floor(totalCostInPennies)}p`);
+        //console.log(`[${simulationNumber}] Total Cost: ${Math.floor(totalCostInPennies)}p`);
     }
 
+    // Based on the cheapest simulation, perform the actions
+    //
+    let cheapestSimulator = simulationOutcomes.reduce((min, obj) => {
+        return obj["totalCost"] < min ? obj["totalCost"] : min;
+    }, Infinity);
 
-    // let tariffTimeSeries = tariff.map(t => {
-    //     // Each block lasts 30 minutes.
-    //     //
-    // })
+    console.log({cheapestSimulator});
 
-    response.send({});
+    // TODO Send a delayed start command to the device.
+    // For now, adjust the forecast.
+    //
+    forecast.startTime = cheapestSimulator.id;
+
+    io.emit("forecast", forecast);
+
+    response.send(simulationOutcomes);
 });

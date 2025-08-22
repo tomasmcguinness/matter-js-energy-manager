@@ -4,24 +4,44 @@ import Card from 'react-bootstrap/Card';
 import TariffTimeline from '../../tariffTimeline.tsx';
 import ForecastTimeline from '../../forecastTimeline.tsx';
 import { useEffect, useState } from 'react';
+import { Forecast } from '../../device.ts';
+import { Manager } from 'socket.io-client';
 
 export default function Page() {
 
   const [isOptimising, setIsOptimising] = useState<boolean>(false);
   const [prices, setPrices] = useState<number[]>([]);
+  const [forecast, setForecast] = useState<Forecast | null>(null);
 
-  // TODO Fetch this forecast
-  let forecast = {
-    slots: [{ nominalPower: 3000, duration: 30 }, { nominalPower: 1000, duration: 60 }, { nominalPower: 1500, duration: 30 }]
-  };
-
-   useEffect(() => {
+  useEffect(() => {
     fetch('http://localhost:3000/tariff').then(r => r.json()).then(data => { setPrices(data); });
+    fetch('http://localhost:3000/forecast').then(r => r.json()).then(data => { setForecast(data); });
+
+    const manager = new Manager("http://localhost:3000", {
+      reconnectionDelayMax: 10000,
+    });
+
+    const socket = manager.socket("/");
+
+    manager.open((err: any) => {
+      if (err) {
+        // an error has occurred
+      } else {
+        // the connection was successfully established
+        console.log("Socket connection established");
+      }
+    });
+
+    socket.on("forecast", (forecast: Forecast) => {
+      console.log("Forecast Updated");
+      console.log({forecast});
+      setForecast(forecast);
+    });
   }, []);
 
   const handleOptimiseClick = () => {
     setIsOptimising(true);
-      fetch(`/optimise`, { method: "POST" }).then(() => setIsOptimising(false));
+    fetch(`http://localhost:3000/optimise`, { method: "POST" }).then(() => setIsOptimising(false));
   };
 
   return <div>
