@@ -152,3 +152,15 @@ app.get("/devices", async (request, response) => {
 
     response.send(devices);
 });
+
+app.get("/optimise", async (request, response) => {
+    response.send({});
+});
+
+app.post("/optimise", async (request, response) => {
+
+    // TODO The routine to perform the optimization based on the current 
+    // forecasts.
+
+    response.send({});
+});
