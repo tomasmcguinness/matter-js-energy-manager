@@ -2,7 +2,8 @@ import { FormaldehydeConcentrationMeasurement } from "@matter/main/model"
 import { NodeStates, PairedNode } from "@project-chip/matter.js/device"
 
 export type Slot = {
-    nominalPower: number
+    nominalPower: number,
+    duration: number
 }
 
 export type Forecast = {

@@ -1,7 +1,7 @@
 'use client'
 
 import { use, useState, useEffect, useRef } from 'react';
-import EnergyTimeline from '../../../energyTimeline.tsx';
+import EnergyTimeline from '../../../forecastTimeline.tsx';
 import Device from '../../../device.ts';
 import { Button, Container } from 'react-bootstrap';
 import { Manager } from 'socket.io-client';

@@ -7,6 +7,8 @@ import cors from "cors";
 
 const app = express();
 app.use(express.json());
+app.use(cors());
+
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
@@ -14,10 +16,6 @@ const io = new Server(server, {
         methods: ["GET", "POST"]
     }
 });
-
-const PORT = process.env.PORT || 3000;
-
-app.use(cors());
 
 app.get("/status", (request, response) => {
     const status = {
@@ -31,10 +29,11 @@ io.on('connection', (socket) => {
     console.log('a user connected');
 });
 
+const PORT = process.env.PORT || 3000;
+
 server.listen(PORT, () => {
     console.log("Server Listening on PORT:", PORT);
 });
-
 
 /*
  * Stand up the Matter Controller
