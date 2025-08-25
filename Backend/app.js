@@ -4,6 +4,7 @@ import express from "express";
 import http from "http"
 import { Server } from "socket.io";
 import cors from "cors";
+import { getDefaultAutoSelectFamilyAttemptTimeout } from "net";
 
 const app = express();
 app.use(express.json());
@@ -164,9 +165,30 @@ var forecast = {
     slots: [{ nominalPower: 3000, duration: 120 }]
 };
 
-let tariff = [28, 28, 7.5, 7.5, 7.5, 7.5, 28, 28];
+//let tariff = [28, 28, 7.5, 7.5, 7.5, 7.5, 28, 28];
+
+let tariffStructure = [{hour: 0, startMinute: 0, endMinute: 29, price: 7.5}];
 
 app.get("/tariff", async (request, response) => {
+
+    let tariff = [];
+
+    // Using the current time, generate slots for the next 12 hours.
+    //
+    let now = Date.now();
+    let max = now + (12 * 60 * 60); // Twelve hours
+
+    // Process each minute for the next 12 hours.
+    //
+    for (var i = now; i < max; i += 3600) {
+        let date = Date(i);
+
+        // 
+
+
+        console.log({date});
+    }
+
     response.send(tariff);
 })
 
@@ -228,7 +250,7 @@ app.post("/optimise", async (request, response) => {
             return accumulator + price;
         }, 0);
 
-        simulationOutcomes.push({id: simulationNumber, totalCost: Math.floor(totalCostInPennies)});
+        simulationOutcomes.push({ id: simulationNumber, totalCost: Math.floor(totalCostInPennies) });
 
         //console.log(`[${simulationNumber}] Total Cost: ${Math.floor(totalCostInPennies)}p`);
     }
@@ -239,7 +261,7 @@ app.post("/optimise", async (request, response) => {
         return min.totalCost < obj.totalCost ? min : obj;
     });
 
-    console.log({cheapestSimulation});
+    console.log({ cheapestSimulation });
 
     // TODO Send a delayed start command to the device.
     // For now, adjust the forecast.

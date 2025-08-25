@@ -38,14 +38,15 @@ const ForecastTimeline = ({ forecast }: EnergyTimelineProps) => {
         return <div className="slot" key={key} style={{ width: `${width}px` }}>{index}</div>;
     });
 
-    if (forecast.startTime > 0) {
-        slots.splice(0, 0, <div className="slot hatched" key="delay" style={{ width: `${forecast.startTime * 3.33}px` }}></div>)
-    }
+    //if (forecast.startTime > 0) {
+        //slots.splice(0, 0, <div className="slot hatched" key="delay" style={{ width: `${forecast.startTime * 3.33}px` }}></div>)
+    //}
 
     return <div className="energyForecastContainer">
         <div className="slotsContainer">
             {slots}
         </div>
+        <span>{forecast.startTime.getHours()}:{forecast.startTime.getMinutes()}</span>
     </div>;
 }
 

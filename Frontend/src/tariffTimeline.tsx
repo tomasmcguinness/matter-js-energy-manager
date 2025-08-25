@@ -4,7 +4,7 @@ type TariffTimelineProps = {
 
 const TariffTimeline = ({ prices }: TariffTimelineProps) => {
 
-    const start = Date.now();
+    const start = new Date();
 
     let slots = prices.map((p, index) => {
         // TODO Better way to determine peak/off-peak!
@@ -16,6 +16,7 @@ const TariffTimeline = ({ prices }: TariffTimelineProps) => {
         <div className="slotsContainer">
             {slots}
         </div>
+        <span>{start.getHours()}:{start.getMinutes()}</span>
     </div>;
 }
 

@@ -6,7 +6,6 @@ import ForecastTimeline from '../../forecastTimeline.tsx';
 import { useEffect, useState } from 'react';
 import { Forecast } from '../../device.ts';
 import { Manager } from 'socket.io-client';
-import Spinner from 'react-bootstrap/Spinner';
 
 export default function Page() {
 
@@ -16,7 +15,14 @@ export default function Page() {
 
   useEffect(() => {
     fetch('http://localhost:3000/tariff').then(r => r.json()).then(data => { setPrices(data); });
-    fetch('http://localhost:3000/forecast').then(r => r.json()).then(data => { setForecast(data); });
+    fetch('http://localhost:3000/forecast').then(r => r.json()).then(data => {
+      let forecast: Forecast = {
+        startTime: new Date(data.startTime),
+        endTime: new Date(data.endTime),
+        slots: [...data.slots]
+      }
+      setForecast(forecast);
+    });
 
     const manager = new Manager("http://localhost:3000", {
       reconnectionDelayMax: 10000,
@@ -35,7 +41,7 @@ export default function Page() {
 
     socket.on("forecast", (forecast: Forecast) => {
       console.log("Forecast Updated");
-      console.log({forecast});
+      console.log({ forecast });
       setForecast(forecast);
     });
   }, []);
