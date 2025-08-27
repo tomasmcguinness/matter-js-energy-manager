@@ -294,10 +294,10 @@ app.get("/tariff", async (request, response) => {
 
 const getForecast = async () => {
 
-    let startDelayInMinutes = 0;
-    let durationInMinutes = 90;
+    // let startDelayInMinutes = 0;
+    // let durationInMinutes = 90;
 
-    let currentTime = Math.round(Date.now() / 1000);
+    // let currentTime = Math.round(Date.now() / 1000);
 
     // All matter times are in seconds since epoch and durations are in seconds.
     //
@@ -309,13 +309,13 @@ const getForecast = async () => {
 
     // console.log({ forecast });
 
-     // Fetch the current forecast from the device.
+    // Fetch the current forecast from the device.
     //
     const nodeDetails = await commissioningController.getCommissionedNodes();
 
     console.log({ nodeDetails });
 
-    const nodeId = nodeDetails[0];
+    const nodeId = nodeDetails[1];
 
     let node = await commissioningController.getNode(nodeId);
 
@@ -332,13 +332,7 @@ const getForecast = async () => {
         console.log({ deviceEnergyManagement });
 
         if (deviceEnergyManagement) {
-
             forecast = await deviceEnergyManagement.getForecastAttribute();
-            console.log({ forecast });
-
-            if (forecast && forecast.endTime < Date.now()) {
-                forecast = null;
-            }
         }
     }
 
@@ -347,11 +341,13 @@ const getForecast = async () => {
 
 app.get("/forecast", async (request, response) => {
 
-    let forecast = getForecast();
+    let forecast = await getForecast();
 
-    if (forecast) {
+    if (forecast !== null) {
+        console.log({ forecast });
         response.send(forecast);
     } else {
+        console.log('Return 204');
         response.status(204).send();
     }
 
@@ -376,7 +372,7 @@ app.post("/optimise", async (request, response) => {
 
     console.log({ tariffSlots });
 
-    var forecast = getForecast();
+    var forecast = await getForecast();
 
     console.log({ forecast });
 

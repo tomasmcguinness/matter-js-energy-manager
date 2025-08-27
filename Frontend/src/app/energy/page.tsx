@@ -18,10 +18,11 @@ export default function Page() {
   useEffect(() => {
     fetch('http://localhost:3000/tariff').then(r => r.json()).then(data => { setPrices(data); });
     fetch('http://localhost:3000/forecast').then(r => r.status === 200 ? r.json() : null).then(data => {
+
       if (data) {
         let forecast: Forecast = {
-          startTime: new Date(data.startTime),
-          endTime: new Date(data.endTime),
+          startTime: data.startTime,
+          endTime: data.endTime,
           slots: [...data.slots]
         }
         setForecast(forecast);
@@ -52,8 +53,8 @@ export default function Page() {
     socket.on("forecast", (data: Forecast) => {
       console.log("Forecast Updated");
       let forecast: Forecast = {
-        startTime: new Date(data.startTime),
-        endTime: new Date(data.endTime),
+        startTime: data.startTime,
+        endTime: data.endTime,
         slots: [...data.slots]
       }
       setForecast(forecast);
