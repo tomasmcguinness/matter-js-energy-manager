@@ -7,8 +7,8 @@ export type Slot = {
 }
 
 export type Forecast = {
-    startTime: Date,
-    endTime: Date,
+    startTime: number,
+    endTime: number,
     slots: Slot[]
 }
 

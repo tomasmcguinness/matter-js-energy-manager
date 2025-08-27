@@ -2,23 +2,22 @@
 
 .tariffForecastContainer {
     width: 100%;
-    padding: 5px;
 }
 
 .tariffForecastContainer .slotsContainer {
     display: flex;
     height: 100%;
     align-self: flex-start;
+    overflow-x: hidden;
 }
 
 .tariffForecastContainer .slotsContainer .slot {
     border: 2px solid black;
     height: 100px;
-    width: 2px;
+    width: 3px;
     border-right-width: 0;
     border-left-width: 0;
-    text-align: center;    
-    overflow: hidden;
+    text-align: center;        
 }
 
 .tariffForecastContainer .slotsContainer .slot.peak {
@@ -43,15 +42,16 @@
 
 .energyForecastContainer {
     width: 100%;
+    overflow-x:hidden; /* important part */
 }
 
 .energyForecastContainer .forecastContainer {
     position: relative;
-    overflow:hidden; /* important part */
     width: fit-content;
     display: grid;
     grid-template-columns: auto auto;
     grid-template-rows: auto auto;
+    transition-duration: 1s;
 }
 
 .energyForecastContainer .forecastContainer .startTime {
@@ -90,7 +90,6 @@
     background-color: gray;
     opacity: 0.8;
     /* background: repeating-linear-gradient( -45deg, #000000, #000000 2px, #ffffff 2px, #ffffff 5px ); */
-
 }
 
 .energyForecastContainer .slotsContainer .slot.hatched span { 

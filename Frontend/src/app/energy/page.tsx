@@ -68,10 +68,7 @@ export default function Page() {
   return <div>
     <h1>Energy Forecast</h1>
     <hr />
-    {isOptimising && <div className="alert alert-info">
-      Optimising Energy Usage
-    </div>}
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative' }} suppressHydrationWarning={true}>
 
       <Card style={{ width: '100%', marginBottom: '10px' }}>
         <Card.Body>
@@ -86,6 +83,10 @@ export default function Page() {
           <ForecastTimeline forecast={forecast} currentTime={currentTime} />
         </Card.Body>
       </Card>
+
+       {isOptimising && <div className="alert alert-info">
+      Optimising Energy Usage
+    </div>}
 
       <button className="btn btn-primary" onClick={handleOptimiseClick}>Optimise</button>
 

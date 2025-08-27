@@ -2,7 +2,7 @@ import { Environment, StorageService } from "@matter/main";
 import { CommissioningController } from "@project-chip/matter.js";
 import { ManualPairingCodeCodec } from "@matter/main/types";
 import express from "express";
-import http from "http"
+import http, { get } from "http"
 import { Server } from "socket.io";
 import cors from "cors";
 import { Diagnostic, NodeId } from "@matter/main";
@@ -217,15 +217,6 @@ app.delete("/devices/:nodeId", async (request, response) => {
     response.status(204).send();
 });
 
-// var forecast = {
-//     // Basic forecast: 3kW nominal consumption for 2 hours
-//     //
-//     startTime: Date.now(),
-//     slots: [{ nominalPower: 3000, duration: 120 }]
-// };
-
-//let tariff =  [28, 28, 7.5, 7.5, 7.5, 7.5, 28, 28];
-
 let tariffStructure = [
     { hour: 0, startMinute: 0, endMinute: 29, price: 7.5 },
     { hour: 0, startMinute: 30, endMinute: 59, price: 7.5 },
@@ -239,27 +230,26 @@ let tariffStructure = [
     { hour: 4, startMinute: 30, endMinute: 59, price: 7.5 },
     { hour: 5, startMinute: 0, endMinute: 29, price: 7.5 },
     { hour: 23, startMinute: 30, endMinute: 59, price: 7.5 },
-    { hour: 11, startMinute: 0, endMinute: 59, price: 7.5 },
+    { hour: 13, startMinute: 0, endMinute: 59, price: 7.5 },
 ];
 
-app.get("/tariff", async (request, response) => {
-
+const generateTariff = (currentTime) => {
     let tariff = [];
 
-    // Using the current time, generate slots.
+    // Using the current time, generate slots for each second.
     //
-    let now = Date.now();
-    let max = now + (1 * 60 * 60); // Twelve hours
+    let now = Math.floor(currentTime / 1000);
+    let max = now + (12 * 60 * 60);
 
-    // Process each minute for the next 12 hours.
+    // Process each second for the next 12 hours.
     //
     for (var i = now; i < max; i++) {
-        let date = new Date(i);
+        let date = new Date(Math.floor(i * 1000));
 
         let hour = date.getHours();
         let minute = date.getMinutes();
 
-        let offpeakSlots = tariffStructure.filter(slot => slot.hour === hour);// && minute >= slot.startMinute && minute <= slot.endMinute);
+        let offpeakSlots = tariffStructure.filter(slot => slot.hour === hour && minute >= slot.startMinute && minute <= slot.endMinute);
 
         if (offpeakSlots.length > 0) {
             //console.log("Found an offpeak slot", { hour, minute, offpeakSlots });
@@ -269,20 +259,41 @@ app.get("/tariff", async (request, response) => {
         }
     }
 
+    if (tariff.length != 43200) {
+        console.error("Tariff length is not 43200, something went wrong!");
+    }
+
+    return tariff;
+}
+
+app.get("/tariff", async (request, response) => {
+    var tariff = generateTariff(Date.now());
     response.send(tariff);
-})
+});
+
+const getForecast = () => {
+
+    let startDelayInMinutes = 0;
+    let durationInMinutes = 90;
+
+    let currentTime = Math.round(Date.now() / 1000);
+
+    // All matter times are in seconds since epoch and durations are in seconds.
+    //
+    let forecast = {
+        startTime: currentTime + (startDelayInMinutes * 60),
+        endTime: currentTime + (startDelayInMinutes * 60) + (durationInMinutes * 60),
+        slots: [{ nominalPower: 3000, duration: durationInMinutes * 60 }] 
+    };
+
+    console.log({ forecast });
+
+    return forecast;
+}
 
 app.get("/forecast", async (request, response) => {
 
-    let forecast = {
-        // Basic forecast: 3kW nominal consumption for 2 hours
-        //
-        startTime: Date.now() + (15 * 60 * 1000), // Start in 15 minutes
-        endTime: Date.now() + (105 * 60 * 1000), // End in 105 minutes (90 minutes after start)
-        slots: [{ nominalPower: 3000, duration: 120 }]
-    };
-
-    console.log({forecast});
+    let forecast = getForecast();
 
     response.send(forecast);
 
@@ -337,48 +348,61 @@ app.post("/optimise", async (request, response) => {
     // Use costs as the signal of efficiency.
     // Test the cost of the forecast by simulating
 
-    //var currentTime = new Date().getTime();
-
-    // Turn tariff into a timeseries.
+    // Based on the current time, generate a tariff.
     //
-    let tariffTimeSeries = tariff.reduce((accumulator, currentValue) => {
+    var currentTime = Date.now();
 
-        for (var i = 0; i < 30; i++) {
-            accumulator.push(currentValue);
-        }
+    var tariff = generateTariff(currentTime);
 
-        return accumulator;
-    }, []);
+    console.log({ tariff });
+
+    var forecast = getForecast();
+
+    console.log({ forecast });
+
+    // // Turn tariff into a timeseries.
+    // //
+    // let tariffTimeSeries = tariff.reduce((accumulator, currentValue) => {
+
+    //     for (var i = 0; i < 30; i++) {
+    //         accumulator.push(currentValue);
+    //     }
+
+    //     return accumulator;
+    // }, []);
+
+    // Turn forecast into a timeseries.
+    let startTime = forecast.startTime; // Seconds.
 
     let dishwasherTimeSeries = forecast.slots.reduce((accumulator, currentValue) => {
 
         for (var i = 0; i < currentValue.duration; i++) {
-            accumulator.push(currentValue.nominalPower);
+            accumulator.push({ time: i + startTime, power: currentValue.nominalPower });
         }
 
         return accumulator;
     }, []);
 
+    console.log({ dishwasherTimeSeries });
+
     let simulationOutcomes = [];
 
-    // Don't delay by more than four hours?
-    //
-    for (var simulationNumber = 0; simulationNumber < 120; simulationNumber++) {
+    let simulationLengthInSeconds = 4 * 60 * 60;
+
+    for (var simulationNumber = 0; simulationNumber < simulationLengthInSeconds; simulationNumber++) {
 
         // Calculate the cost of the running the dishwasher at this specific offset.
+        // TODO Take earlistStartTime into account.
         //
-        var totalCostInPennies = dishwasherTimeSeries.reduce((accumulator, power, index) => {
+        var totalCostInPennies = dishwasherTimeSeries.reduce((accumulator, dishwasherPoint, index) => {
 
-            // Get the price, offseting by one minute for each simulator.
-            //
-            var currentUnitPrice = tariffTimeSeries[index + simulationNumber];
+            var tariffPoint = tariff[index + simulationNumber];
 
-            // Each tick is one minute. 
-            //
-            let powerInKiloWatt = power / 1000;
-            let price = (powerInKiloWatt / 60) * currentUnitPrice;
+            let powerInKiloWatt = dishwasherPoint.power / 1000;
+            let price = (powerInKiloWatt / 60 / 60) * tariffPoint.price;
 
             return accumulator + price;
+
         }, 0);
 
         simulationOutcomes.push({ id: simulationNumber, totalCost: Math.floor(totalCostInPennies) });
@@ -397,7 +421,7 @@ app.post("/optimise", async (request, response) => {
     // TODO Send a delayed start command to the device.
     // For now, adjust the forecast.
     //
-    forecast.startTime = cheapestSimulation.id;
+    forecast.startTime = forecast.startTime + cheapestSimulation.id;
 
     io.emit("forecast", forecast);
 

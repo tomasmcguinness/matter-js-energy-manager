@@ -37,7 +37,7 @@ const ForecastTimeline = ({ forecast, currentTime }: EnergyTimelineProps) => {
 
     let slots = forecast.slots.map((slot, index) => {
         const key = `slot_${index}`;
-        const width = slot.duration * 3.33;
+        const width = slot.duration * 0.03;
         return <div className="slot" key={key} style={{ width: `${width}px` }}>{index}</div>;
     });
 
@@ -45,13 +45,24 @@ const ForecastTimeline = ({ forecast, currentTime }: EnergyTimelineProps) => {
     //slots.splice(0, 0, <div className="slot hatched" key="delay" style={{ width: `${forecast.startTime * 3.33}px` }}></div>)
     //}
 
+    const computeOffset = (startTime: number) => {
+        let startTimeInMilli = startTime * 1000;
+
+        let differenceInMilli = startTimeInMilli - currentTime!.getTime();
+
+        let differenceInSeconds = Math.round(differenceInMilli / 1000);
+
+        return `${differenceInSeconds * 0.03}px`;
+        //return '0px';
+    }
+
     return <div className="energyForecastContainer">
-        <div className="forecastContainer" style={{ left: '100px' }}>
+        <div className="forecastContainer" style={{ left: computeOffset(forecast.startTime) }}>
             <div className="slotsContainer">
                 {slots}
             </div>
-            <span className="startTime">{forecast.startTime.getHours()}:{forecast.startTime.getMinutes()}</span>
-            <span className="endTime">{forecast.endTime.getHours()}:{forecast.endTime.getMinutes()}</span>
+            <span className="startTime">{new Date(forecast.startTime * 1000).toLocaleTimeString('en-GB', { hour12: false })}</span>
+            {/* <span className="endTime">{forecast.endTime.toLocaleTimeString('en-GB', { hour12: false })}</span> */}
         </div>
     </div>;
 }
