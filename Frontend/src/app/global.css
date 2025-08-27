@@ -1,14 +1,80 @@
 @import 'bootstrap/dist/css/bootstrap.min.css';
 
-.energyForecastContainer {
+.tariffForecastContainer {
     width: 100%;
     padding: 5px;
 }
 
-.energyForecastContainer .slotsContainer {
+.tariffForecastContainer .slotsContainer {
     display: flex;
     height: 100%;
     align-self: flex-start;
+}
+
+.tariffForecastContainer .slotsContainer .slot {
+    border: 2px solid black;
+    height: 100px;
+    width: 2px;
+    border-right-width: 0;
+    border-left-width: 0;
+    text-align: center;    
+    overflow: hidden;
+}
+
+.tariffForecastContainer .slotsContainer .slot.peak {
+    background-color: red;
+    color: white;
+}
+
+.tariffForecastContainer .slotsContainer .slot.off-peak {
+    background-color: green;
+    color: white;
+}
+
+
+.tariffForecastContainer .slotsContainer .slot:last-child {
+    border-right-width: 2px;
+} 
+
+.tariffForecastContainer .slotsContainer .slot:first-child {
+    border-left-width: 2px;
+} 
+
+
+.energyForecastContainer {
+    width: 100%;
+}
+
+.energyForecastContainer .forecastContainer {
+    position: relative;
+    overflow:hidden; /* important part */
+    width: fit-content;
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-template-rows: auto auto;
+}
+
+.energyForecastContainer .forecastContainer .startTime {
+    text-align: left;
+    grid-column: 1;
+    grid-row: 2;
+}
+
+.energyForecastContainer .forecastContainer .endTime {
+    text-align: right;
+    grid-column: 2;
+    grid-row: 2;
+}
+
+.energyForecastContainer .slotsContainer {
+    position: relative;
+    display: flex;
+    height: 100%;
+    align-self: flex-start;
+    width: fit-content;
+    grid-row: 1;
+    grid-column-start: 1;
+    grid-column-end: span 2;
 }
 
 .energyForecastContainer .slotsContainer .slot {

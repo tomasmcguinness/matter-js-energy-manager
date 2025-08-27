@@ -108,6 +108,6 @@ export default function Page() {
     <h1>Devices</h1>
     <hr />
     {body}
-    <Link href="/devices/add">Add Device</Link>
+    <Link href="/devices/add" className="btn btn-primary">Add Device</Link>
   </Container>;
 };

@@ -1,22 +1,22 @@
+'use client'
+
 type TariffTimelineProps = {
     prices: number[];
+    currentTime: Date;
 };
 
-const TariffTimeline = ({ prices }: TariffTimelineProps) => {
+const TariffTimeline = ({ prices, currentTime }: TariffTimelineProps) => {
 
-    const start = new Date();
-
-    let slots = prices.map((p, index) => {
-        // TODO Better way to determine peak/off-peak!
-        let slotClass = p == 28 ? "slot peak" : "slot off-peak";
-        return <div key={index} className={slotClass}>{p}p</div>;
+    let slots = prices.map((p: any, index) => {
+        let slotClass = p.price == 28 ? "slot peak" : "slot off-peak";
+        return <div key={index} className={slotClass}></div>;
     });
 
-    return <div className="energyForecastContainer">
+    return <div className="tariffForecastContainer">
         <div className="slotsContainer">
             {slots}
         </div>
-        <span>{start.getHours()}:{start.getMinutes()}</span>
+        <span>{currentTime.toLocaleTimeString('en-GB', { hour12: false })}</span>
     </div>;
 }
 

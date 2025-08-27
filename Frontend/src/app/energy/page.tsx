@@ -9,20 +9,30 @@ import { Manager } from 'socket.io-client';
 
 export default function Page() {
 
+  const [currentTime, setCurrentTime] = useState<Date>(new Date());
+
   const [isOptimising, setIsOptimising] = useState<boolean>(false);
   const [prices, setPrices] = useState<number[]>([]);
   const [forecast, setForecast] = useState<Forecast | null>(null);
 
   useEffect(() => {
     fetch('http://localhost:3000/tariff').then(r => r.json()).then(data => { setPrices(data); });
-    fetch('http://localhost:3000/forecast').then(r => r.json()).then(data => {
-      let forecast: Forecast = {
-        startTime: new Date(data.startTime),
-        endTime: new Date(data.endTime),
-        slots: [...data.slots]
+    fetch('http://localhost:3000/forecast').then(r => r.status === 200 ? r.json() : null).then(data => {
+      if (data) {
+        let forecast: Forecast = {
+          startTime: new Date(data.startTime),
+          endTime: new Date(data.endTime),
+          slots: [...data.slots]
+        }
+        setForecast(forecast);
+      } else {
+        setForecast(null);
       }
-      setForecast(forecast);
     });
+
+    setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
 
     const manager = new Manager("http://localhost:3000", {
       reconnectionDelayMax: 10000,
@@ -39,9 +49,13 @@ export default function Page() {
       }
     });
 
-    socket.on("forecast", (forecast: Forecast) => {
+    socket.on("forecast", (data: Forecast) => {
       console.log("Forecast Updated");
-      console.log({ forecast });
+      let forecast: Forecast = {
+        startTime: new Date(data.startTime),
+        endTime: new Date(data.endTime),
+        slots: [...data.slots]
+      }
       setForecast(forecast);
     });
   }, []);
@@ -62,14 +76,14 @@ export default function Page() {
       <Card style={{ width: '100%', marginBottom: '10px' }}>
         <Card.Body>
           <Card.Title>Tariff</Card.Title>
-          <TariffTimeline prices={prices} />
+          <TariffTimeline prices={prices} currentTime={currentTime} />
         </Card.Body>
       </Card>
 
       <Card style={{ width: '100%', marginBottom: '10px' }}>
         <Card.Body>
           <Card.Title>Dishwasher</Card.Title>
-          <ForecastTimeline forecast={forecast} />
+          <ForecastTimeline forecast={forecast} currentTime={currentTime} />
         </Card.Body>
       </Card>
 

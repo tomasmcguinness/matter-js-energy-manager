@@ -1,5 +1,7 @@
 'use client'
+import Link from 'next/link';
 import { useState } from 'react';
+import { Container } from 'react-bootstrap';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 
@@ -14,18 +16,26 @@ const SocketComponent = () => {
       manualSetupCode,
     });
 
-    fetch('/api/devices', { method: 'POST', body });
+    fetch('http://localhost:3000/devices', {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: 'POST', body
+    });
   }
 
-  return <div>
+  return <Container>
+    <h1>Add Node</h1>
+    <hr />
     <Form>
       <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
         <Form.Label>Manual Pairing Code</Form.Label>
-        <Form.Control type="text" placeholder="1234-123-1234" value={manualSetupCode} onChange={(e) => setManualSetupCode(e.target.value)} />
+        <Form.Control type="text" placeholder="1234-123-1234" value={manualSetupCode} onChange={(e: any) => setManualSetupCode(e.target.value)} />
       </Form.Group>
     </Form>
+    <Link href="/devices" className="btn btn-danger" style={{marginRight:'5px'}}>Cancel</Link>
     <Button onClick={performBasicCommissioning}>Commission</Button>
-  </div>;
+  </Container>;
 };
 
 export default SocketComponent;
