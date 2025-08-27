@@ -249,6 +249,7 @@ const generateTariff = (currentTime) => {
     //
     var lastSlotType;
     var lastDuration = 0;
+    var startDate = now;
 
     var totalMinutesProcessed = 0;
     for (var i = now; i < max; i++) {
@@ -265,6 +266,7 @@ const generateTariff = (currentTime) => {
         let currentSlotType = offpeakSlots.length > 0 ? 'offpeak' : 'peak';
 
         if (lastDuration == 0) {
+            startDate = date;
             lastSlotType = currentSlotType;
             lastDuration++;
         }
@@ -275,7 +277,7 @@ const generateTariff = (currentTime) => {
             lastDuration++;
         }
         else {
-            tariffSlots.push({ type: lastSlotType, price: lastSlotType == 'offpeak' ? 7.5 : 28, duration: lastDuration });
+            tariffSlots.push({ startDate: startDate, type: lastSlotType, price: lastSlotType == 'offpeak' ? 7.5 : 28, duration: lastDuration });
             lastDuration = 0;
         }
     }
@@ -391,11 +393,9 @@ app.post("/optimise", async (request, response) => {
 
     // Turn forecast into a timeseries.
     //
-    let startTime = forecast.startTime; // Seconds.
-
     let dishwasherTimeSeries = forecast.slots.reduce((accumulator, currentValue) => {
 
-        for (var i = 0; i < currentValue.duration; i++) {
+        for (var i = 0; i < currentValue.defaultDuration; i++) {
             accumulator.push(currentValue.nominalPower);
         }
 
@@ -405,7 +405,7 @@ app.post("/optimise", async (request, response) => {
     console.log({ dishwasherTimeSeries });
 
     let simulationOutcomes = [];
-    let maximumSimulationDelayInHours = 10
+    let maximumSimulationDelayInHours = 12;
     let simulationLengthInSeconds = maximumSimulationDelayInHours * 60 * 60;
 
     for (var simulationNumber = 0; simulationNumber < simulationLengthInSeconds; simulationNumber++) {
@@ -414,14 +414,12 @@ app.post("/optimise", async (request, response) => {
         // TODO Take earlistStartTime into account.
         //
         var totalCostInPennies = dishwasherTimeSeries.reduce((accumulator, power, index) => {
-
             var tariffPrice = tariffTimeSeries[index + simulationNumber];
 
-            let powerInKiloWatt = power / 1000;
-            let price = (powerInKiloWatt / 60 / 60) * tariffPrice;
+            let powerInKiloWatt = power / 1000000; // convert from milliwatts to kilowatts (Matter uses milliwatts)
+            let price = (powerInKiloWatt / 3600) * tariffPrice;
 
             return accumulator + price;
-
         }, 0);
 
         simulationOutcomes.push({ delay: simulationNumber, totalCost: Math.floor(totalCostInPennies) });
@@ -440,7 +438,7 @@ app.post("/optimise", async (request, response) => {
     // TODO Send a delayed start command to the device.
     // For now, adjust the forecast.
     //
-    forecast.startTime = forecast.startTime + cheapestSimulation.delay;
+    forecast.startTime = (currentTime / 1000) + cheapestSimulation.delay;
 
     io.emit("forecast", forecast);
 

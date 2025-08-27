@@ -52,12 +52,17 @@ export default function Page() {
 
     socket.on("forecast", (data: Forecast) => {
       console.log("Forecast Updated");
-      let forecast: Forecast = {
-        startTime: data.startTime,
-        endTime: data.endTime,
-        slots: [...data.slots]
+
+      if (data) {
+        let forecast: Forecast = {
+          startTime: data.startTime,
+          endTime: data.endTime,
+          slots: [...data.slots]
+        }
+        setForecast(forecast);
+      } else {
+        setForecast(null);
       }
-      setForecast(forecast);
     });
   }, []);
 
@@ -85,9 +90,9 @@ export default function Page() {
         </Card.Body>
       </Card>
 
-       {isOptimising && <div className="alert alert-info">
-      Optimising Energy Usage
-    </div>}
+      {isOptimising && <div className="alert alert-info">
+        Optimising Energy Usage
+      </div>}
 
       <button className="btn btn-primary" onClick={handleOptimiseClick}>Optimise</button>
 
