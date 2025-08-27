@@ -1,12 +1,8 @@
 'use client'
 
 import { use, useState, useEffect, useRef } from 'react';
-import EnergyTimeline from '../../../forecastTimeline.tsx';
-import Device from '../../../device.ts';
 import { Button, Container } from 'react-bootstrap';
 import { Manager } from 'socket.io-client';
-import { DeviceClasses } from '@project-chip/matter.js/device';
-import { nodeId } from '@matter/main/model';
 
 // export default function Page({
 //   params,
@@ -19,7 +15,6 @@ export default function Page({ params }) {
   const { deviceId } = use(params);
 
   console.log("Device ID: " + deviceId);
-
 
   //const [device, setDevice] = useState<Device>();
   //const [forecast, setForecast] = useState<any>();

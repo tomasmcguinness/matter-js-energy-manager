@@ -281,8 +281,8 @@ const generateTariff = (currentTime) => {
     }
 
     if (totalMinutesProcessed != projectionLengthInSeconds) {
-         console.error("Tariff length is not the expected value. Something went wrong!");
-     }
+        console.error("Tariff length is not the expected value. Something went wrong!");
+    }
 
     return tariffSlots;
 }
@@ -292,7 +292,7 @@ app.get("/tariff", async (request, response) => {
     response.send(tariff);
 });
 
-const getForecast = () => {
+const getForecast = async () => {
 
     let startDelayInMinutes = 0;
     let durationInMinutes = 90;
@@ -301,26 +301,15 @@ const getForecast = () => {
 
     // All matter times are in seconds since epoch and durations are in seconds.
     //
-    let forecast = {
-        startTime: currentTime + (startDelayInMinutes * 60),
-        endTime: currentTime + (startDelayInMinutes * 60) + (durationInMinutes * 60),
-        slots: [{ nominalPower: 3000, duration: durationInMinutes * 60 }]
-    };
+    // let forecast = {
+    //     startTime: currentTime + (startDelayInMinutes * 60),
+    //     endTime: currentTime + (startDelayInMinutes * 60) + (durationInMinutes * 60),
+    //     slots: [{ nominalPower: 3000, duration: durationInMinutes * 60 }]
+    // };
 
-    console.log({ forecast });
+    // console.log({ forecast });
 
-    return forecast;
-}
-
-app.get("/forecast", async (request, response) => {
-
-    let forecast = getForecast();
-
-    response.send(forecast);
-
-    return;
-
-    // Fetch the current forecast from the device.
+     // Fetch the current forecast from the device.
     //
     const nodeDetails = await commissioningController.getCommissionedNodes();
 
@@ -334,6 +323,8 @@ app.get("/forecast", async (request, response) => {
 
     console.log({ devices });
 
+    var forecast = null;
+
     if (devices[1] && devices[1].number === 2) {
 
         const deviceEnergyManagement = devices[1].getClusterClient(DeviceEnergyManagement.Complete);
@@ -342,21 +333,29 @@ app.get("/forecast", async (request, response) => {
 
         if (deviceEnergyManagement) {
 
-            let forecast = await deviceEnergyManagement.getForecastAttribute();
+            forecast = await deviceEnergyManagement.getForecastAttribute();
             console.log({ forecast });
 
-            if (forecast && forecast.endTime > Date.now()) {
-                response.send(forecast);
-            } else {
-                response.status(204).send();
+            if (forecast && forecast.endTime < Date.now()) {
+                forecast = null;
             }
         }
-        else {
-            response.status(204).send();
-        }
+    }
+
+    return forecast;
+}
+
+app.get("/forecast", async (request, response) => {
+
+    let forecast = getForecast();
+
+    if (forecast) {
+        response.send(forecast);
     } else {
         response.status(204).send();
     }
+
+    return;
 })
 
 app.post("/optimise", async (request, response) => {

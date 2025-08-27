@@ -12,14 +12,16 @@
 }
 
 .tariffForecastContainer .slotsContainer .slot {
-    border: 2px solid black;
     height: 100px;
     width: 3px;
     border-right-width: 0;
     border-left-width: 0;
     text-align: center;        
     flex-grow: 0;
-    flex-shrink: 0;;
+    flex-shrink: 0;
+    display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .tariffForecastContainer .slotsContainer .slot.peak {
@@ -31,16 +33,6 @@
     background-color: green;
     color: white;
 }
-
-
-.tariffForecastContainer .slotsContainer .slot:last-child {
-    border-right-width: 2px;
-} 
-
-.tariffForecastContainer .slotsContainer .slot:first-child {
-    border-left-width: 2px;
-} 
-
 
 .energyForecastContainer {
     width: 100%;

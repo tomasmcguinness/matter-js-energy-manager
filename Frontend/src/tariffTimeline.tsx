@@ -14,7 +14,7 @@ const TariffTimeline = ({ prices, currentTime }: TariffTimelineProps) => {
     let slots = prices.map((tariffSlot: any, index) => {
         let slotClass = tariffSlot.type == "peak" ? "slot peak" : "slot off-peak";
         let width = tariffSlot.duration * 0.03;
-        return <div key={index} className={slotClass} style={{width: width}}></div>;
+        return <div key={index} className={slotClass} style={{width: width}}>{tariffSlot.price}p</div>;
     });
 
     const computeOffset = (startTime: number) => {
