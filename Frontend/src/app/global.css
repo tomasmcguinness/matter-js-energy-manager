@@ -18,6 +18,8 @@
     border-right-width: 0;
     border-left-width: 0;
     text-align: center;        
+    flex-grow: 0;
+    flex-shrink: 0;;
 }
 
 .tariffForecastContainer .slotsContainer .slot.peak {
