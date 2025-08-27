@@ -9,6 +9,7 @@ import Container from 'react-bootstrap/Container';
 import Alert from 'react-bootstrap/Alert';
 import { NodeStates } from '@project-chip/matter.js/device';
 import { Manager } from 'socket.io-client';
+import Device from '../../device.ts';
 
 export default function Page() {
 
@@ -75,19 +76,16 @@ export default function Page() {
   }
 
   const deviceTRs = devices.map((device) =>
-    <tr key={device.id} style={{ cursor: 'pointer' }} onClick={() => handleRowClick(device)}><td>{device.id}</td><td style={{width:'1%'}}>{getStateBadge(device.state)}</td></tr>
+    <tr key={device.id} style={{ cursor: 'pointer' }} onClick={() => handleRowClick(device)}><td>{device.id}</td><td style={{ width: '1%' }}>{getStateBadge(device.state)}</td></tr>
   );
 
   var body = null;
 
-  if(isLoading) {
-    body = <Spinner animation="grow" variant="primary">
-        <span className="visually-hidden">Loading commissioned devices...</span>
-      </Spinner>;
+  if (isLoading) {
+    body = <Alert variant="info">Loading nodes...</Alert>;
   }
-  else
-  {
-    if(deviceTRs.length == 0) {
+  else {
+    if (deviceTRs.length == 0) {
       body = <Alert variant="info">No devices have been commissioned. We cannot use Bluetooth to commission a device, so open the Pairing Windows using another device.</Alert>
     } else {
       body = <Table striped bordered hover>

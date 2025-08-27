@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link.js';
 import { use, useState, useEffect, useRef } from 'react';
 import { Button, Container } from 'react-bootstrap';
 import { Manager } from 'socket.io-client';
@@ -72,6 +73,7 @@ export default function Page({ params }) {
     <h1>Node: {deviceId}</h1>
     <hr />
     {devices}
+    <Link href="/devices" className="btn btn-secondary" style={{marginRight: '5px'}}>Back to Devices</Link>
     <Button onClick={unpairDevice}>Unpair Device</Button>
   </Container>;
 };
