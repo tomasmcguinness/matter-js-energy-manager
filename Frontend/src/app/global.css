@@ -12,16 +12,29 @@
 }
 
 .tariffForecastContainer .slotsContainer .slot {
+    position: relative;
     height: 100px;
     width: 3px;
-    border-right-width: 0;
-    border-left-width: 0;
-    text-align: center;        
+    border-style: solid;
+    border-color: black;
+    border-width: 0;
+    border-left-width: 3px;
+    text-align: center;
     flex-grow: 0;
     flex-shrink: 0;
     display: flex;
-  justify-content: center;
-  align-items: center;
+    justify-content: center;
+    align-items: center;
+}
+
+.tariffForecastContainer .slotsContainer .slot .startTime {
+    position: absolute;
+    left:5px;
+    bottom:5px;
+}
+
+.tariffForecastContainer .slotsContainer .slot:first-child .startTime {
+    display: none;
 }
 
 .tariffForecastContainer .slotsContainer .slot.peak {
@@ -36,7 +49,8 @@
 
 .energyForecastContainer {
     width: 100%;
-    overflow-x:hidden; /* important part */
+    overflow-x: hidden;
+    /* important part */
 }
 
 .energyForecastContainer .forecastContainer {
@@ -76,7 +90,7 @@
     border-right-width: 0;
     width: 100px;
     padding: 10px;
-    text-align: center;    
+    text-align: center;
     overflow: hidden;
 }
 
@@ -86,7 +100,7 @@
     /* background: repeating-linear-gradient( -45deg, #000000, #000000 2px, #ffffff 2px, #ffffff 5px ); */
 }
 
-.energyForecastContainer .slotsContainer .slot.hatched span { 
+.energyForecastContainer .slotsContainer .slot.hatched span {
     background-color: #ffffff;
     text-transform: uppercase;
     color: #000;
@@ -99,7 +113,7 @@
 
 .energyForecastContainer .slotsContainer .slot:last-child {
     border-right-width: 2px;
-} 
+}
 
 .energyForecastContainer .slotsContainer .slot.peak {
     background-color: red;

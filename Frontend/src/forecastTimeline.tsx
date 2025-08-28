@@ -32,13 +32,13 @@ const ForecastTimeline = ({ forecast, currentTime }: EnergyTimelineProps) => {
     //console.log("Rendering EnergyTimeline with forecast:", forecast);
 
     if (forecast == null) {
-        return <div className="alert alert-info" style={{ marginBottom: '0' }}>No Energy Usage Forecast</div>;
+        return <div className="alert alert-info" style={{ marginBottom: '0' }}>No energy usage currently forecast</div>;
     }
 
     let slots = forecast.slots.map((slot, index) => {
         const key = `slot_${index}`;
         const width = slot.duration * 0.03;
-        return <div className="slot" key={key} style={{ width: `${width}px` }}>{index}</div>;
+        return <div className="slot" key={key} style={{ width: `${width}px` }}>{slot.nominalPower/1000000}kW ({index})</div>;
     });
 
     //if (forecast.startTime > 0) {
@@ -53,7 +53,6 @@ const ForecastTimeline = ({ forecast, currentTime }: EnergyTimelineProps) => {
         let differenceInSeconds = Math.round(differenceInMilli / 1000);
 
         return `${differenceInSeconds * 0.03}px`;
-        //return '0px';
     }
 
     return <div className="energyForecastContainer">

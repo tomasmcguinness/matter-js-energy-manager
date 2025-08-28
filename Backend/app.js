@@ -220,18 +220,18 @@ app.delete("/devices/:nodeId", async (request, response) => {
 let tariffStructure = [
     { hour: 0, startMinute: 0, endMinute: 29, price: 7.5 },
     { hour: 0, startMinute: 30, endMinute: 59, price: 7.5 },
-    // { hour: 1, startMinute: 0, endMinute: 29, price: 7.5 },
-    // { hour: 1, startMinute: 30, endMinute: 59, price: 7.5 },
-    // { hour: 2, startMinute: 0, endMinute: 29, price: 7.5 },
-    // { hour: 2, startMinute: 30, endMinute: 59, price: 7.5 },
-    // { hour: 3, startMinute: 0, endMinute: 29, price: 7.5 },
-    // { hour: 3, startMinute: 30, endMinute: 59, price: 7.5 },
-    // { hour: 4, startMinute: 0, endMinute: 29, price: 7.5 },
-    // { hour: 4, startMinute: 30, endMinute: 59, price: 7.5 },
-    // { hour: 5, startMinute: 0, endMinute: 29, price: 7.5 },
-    { hour: 23, startMinute: 0, endMinute: 29, price: 7.5 },
-    { hour: 13, startMinute: 0, endMinute: 29, price: 7.5 },
-    { hour: 14, startMinute: 0, endMinute: 29, price: 7.5 },
+    { hour: 1, startMinute: 0, endMinute: 29, price: 7.5 },
+    { hour: 1, startMinute: 30, endMinute: 59, price: 7.5 },
+    { hour: 2, startMinute: 0, endMinute: 29, price: 7.5 },
+    { hour: 2, startMinute: 30, endMinute: 59, price: 7.5 },
+    { hour: 3, startMinute: 0, endMinute: 29, price: 7.5 },
+    { hour: 3, startMinute: 30, endMinute: 59, price: 7.5 },
+    { hour: 4, startMinute: 0, endMinute: 29, price: 7.5 },
+    { hour: 4, startMinute: 30, endMinute: 59, price: 7.5 },
+    { hour: 5, startMinute: 0, endMinute: 29, price: 7.5 },
+    { hour: 23, startMinute: 30, endMinute: 59, price: 7.5 },
+    //{ hour: 13, startMinute: 0, endMinute: 29, price: 7.5 },
+    //{ hour: 14, startMinute: 0, endMinute: 29, price: 7.5 },
 ];
 
 const generateTariff = (currentTime) => {
@@ -241,7 +241,7 @@ const generateTariff = (currentTime) => {
 
     // Using the current time, generate slots for each second.
     //
-    let now = Math.floor(currentTime / 1000);
+    let now = currentTime;
     let max = now + projectionLengthInSeconds;
 
     // Process each second for the next 12 hours.
@@ -282,6 +282,8 @@ const generateTariff = (currentTime) => {
         }
     }
 
+    tariffSlots.push({ startDate: startDate, type: lastSlotType, price: lastSlotType == 'offpeak' ? 7.5 : 28, duration: lastDuration });
+
     if (totalMinutesProcessed != projectionLengthInSeconds) {
         console.error("Tariff length is not the expected value. Something went wrong!");
     }
@@ -290,7 +292,7 @@ const generateTariff = (currentTime) => {
 }
 
 app.get("/tariff", async (request, response) => {
-    var tariff = generateTariff(Date.now());
+    var tariff = generateTariff(Math.floor(Date.now()/1000));
     response.send(tariff);
 });
 
@@ -368,7 +370,7 @@ app.post("/optimise", async (request, response) => {
 
     // Based on the current time, generate a tariff.
     //
-    var currentTime = Date.now();
+    var currentTime = Math.floor(Date.now() / 1000);
 
     var tariffSlots = generateTariff(currentTime);
 
@@ -419,8 +421,12 @@ app.post("/optimise", async (request, response) => {
             let powerInKiloWatt = power / 1000000; // convert from milliwatts to kilowatts (Matter uses milliwatts)
             let price = (powerInKiloWatt / 3600) * tariffPrice;
 
+            //console.log({ powerInKiloWatt, price });
+
             return accumulator + price;
         }, 0);
+
+        //console.log({ simulationNumber, totalCostInPennies });
 
         simulationOutcomes.push({ delay: simulationNumber, totalCost: Math.floor(totalCostInPennies) });
 
@@ -430,17 +436,31 @@ app.post("/optimise", async (request, response) => {
     // Based on the cheapest simulation, perform the actions
     //
     let cheapestSimulation = simulationOutcomes.reduce((min, obj) => {
-        return min.totalCost < obj.totalCost ? min : obj;
+        return min.totalCost <= obj.totalCost ? min : obj;
     });
 
     console.log({ cheapestSimulation });
 
-    // TODO Send a delayed start command to the device.
-    // For now, adjust the forecast.
-    //
-    forecast.startTime = (currentTime / 1000) + cheapestSimulation.delay;
+    const nodeDetails = await commissioningController.getCommissionedNodes();
 
-    io.emit("forecast", forecast);
+    const nodeId = nodeDetails[1];
+
+    let node = await commissioningController.getNode(nodeId);
+
+    const devices = node.getDevices();
+
+    if (devices[1] && devices[1].number === 2) {
+
+        const deviceEnergyManagement = devices[1].getClusterClient(DeviceEnergyManagement.Complete);
+
+        let newStartTime = currentTime + cheapestSimulation.delay;
+
+        await deviceEnergyManagement.startTimeAdjustRequest({ requestedStartTime: newStartTime, cause: DeviceEnergyManagement.AdjustmentCause.LocalOptimization});
+
+        forecast.startTime = newStartTime;
+
+        io.emit("forecast", forecast);
+    }
 
     response.send(simulationOutcomes);
 });
