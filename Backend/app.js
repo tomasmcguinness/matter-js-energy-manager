@@ -6,7 +6,7 @@ import http, { get } from "http"
 import { Server } from "socket.io";
 import cors from "cors";
 import { Diagnostic, NodeId } from "@matter/main";
-import { GeneralCommissioning } from "@matter/main/clusters";
+import { DishwasherMode, GeneralCommissioning, OperationalState } from "@matter/main/clusters";
 import { DeviceEnergyManagement } from "@matter/main/clusters";
 import { NodeStates } from "@project-chip/matter.js/device";
 
@@ -73,13 +73,20 @@ let nodes = await commissioningController.getCommissionedNodes();
 nodes.forEach(async (nodeId) => {
     const node = await commissioningController.getNode(nodeId);
 
-    node.events.attributeChanged.on(({ path: { nodeId, clusterId, endpointId, attributeName }, value }) =>
-        console.log(
-            `attributeChangedCallback ${nodeId}: Attribute ${endpointId}/${clusterId}/${attributeName} changed to ${Diagnostic.json(
-                value,
-            )}`,
-        ),
-    );
+    node.events.attributeChanged.on(({ path: { nodeId, clusterId, endpointId, attributeName }, value }) => {
+
+        if (clusterId === OperationalState.id) {
+            io.emit("operationalState", value);
+        }
+
+
+
+        // console.log(
+        //     `attributeChangedCallback ${nodeId}: Attribute ${endpointId}/${clusterId}/${attributeName} changed to ${Diagnostic.json(
+        //         value,
+        //     )}`,
+        // ),
+    });
 
     if (!node.isConnected) {
         node.connect();
@@ -117,7 +124,13 @@ nodes.forEach(async (nodeId) => {
 
                         deviceEnergyManagement.addForecastAttributeListener(value => {
                             console.log("Forecast Updated", value);
-                            io.emit("forecast", value);
+
+                            if (value.startTime === 0) {
+                                console.log('Ignoring empty forecast');
+                                io.emit("forecast", null);
+                            } else {
+                                io.emit("forecast", value);
+                            }
                         });
 
                     } else {
@@ -164,11 +177,21 @@ app.get("/devices/:nodeId", async (request, response) => {
 
     const node = await commissioningController.getNode(NodeId(nodeId));
 
+    const operationalStateCluster = node.getDevices()[0].getClusterClient(OperationalState.Complete);
+    const dishwasherModeCluster = node.getDevices()[0].getClusterClient(DishwasherMode.Complete);
+
+    node.getDevices()[1].getClusterClient(DeviceEnergyManagement.Complete);
+
+    var operationState = await operationalStateCluster.getOperationalStateAttribute();
+    var dishwasherMode = await dishwasherModeCluster.getCurrentModeAttribute();
+
     response.send({
         id: nodeId.toString(),
         state: node.state,
         manufacturer: node?.basicInformation?.manufacturerName?.toString(),
-        devices: node.getDevices().map(device => ({ id: device.id, name: device.name, number: device.number }))
+        currentState: operationState,
+        currentMode: dishwasherMode
+        //devices: node.getDevices().map(device => ({ id: device.id, name: device.name, number: device.number }))
     });
 });
 
@@ -292,7 +315,7 @@ const generateTariff = (currentTime) => {
 }
 
 app.get("/tariff", async (request, response) => {
-    var tariff = generateTariff(Math.floor(Date.now()/1000));
+    var tariff = generateTariff(Math.floor(Date.now() / 1000));
     response.send(tariff);
 });
 
@@ -317,15 +340,11 @@ const getForecast = async () => {
     //
     const nodeDetails = await commissioningController.getCommissionedNodes();
 
-    console.log({ nodeDetails });
-
     const nodeId = nodeDetails[1];
 
     let node = await commissioningController.getNode(nodeId);
 
     const devices = node.getDevices();
-
-    console.log({ devices });
 
     var forecast = null;
 
@@ -333,7 +352,7 @@ const getForecast = async () => {
 
         const deviceEnergyManagement = devices[1].getClusterClient(DeviceEnergyManagement.Complete);
 
-        console.log({ deviceEnergyManagement });
+        //console.log({ deviceEnergyManagement });
 
         if (deviceEnergyManagement) {
             forecast = await deviceEnergyManagement.getForecastAttribute();
@@ -349,7 +368,12 @@ app.get("/forecast", async (request, response) => {
 
     if (forecast !== null) {
         console.log({ forecast });
-        response.send(forecast);
+
+        if (forecast.startTime === 0) {
+            response.status(204).send();
+        } else {
+            response.send(forecast);
+        }
     } else {
         console.log('Return 204');
         response.status(204).send();
@@ -455,7 +479,7 @@ app.post("/optimise", async (request, response) => {
 
         let newStartTime = currentTime + cheapestSimulation.delay;
 
-        await deviceEnergyManagement.startTimeAdjustRequest({ requestedStartTime: newStartTime, cause: DeviceEnergyManagement.AdjustmentCause.LocalOptimization});
+        await deviceEnergyManagement.startTimeAdjustRequest({ requestedStartTime: newStartTime, cause: DeviceEnergyManagement.AdjustmentCause.LocalOptimization });
 
         forecast.startTime = newStartTime;
 

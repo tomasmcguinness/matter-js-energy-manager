@@ -65,14 +65,14 @@ export default function Page({ params }) {
     }
   };
 
-  const devices = device?.devices.map((d, index) => {
-    return <div key={index} className="alert alert-light">{d.number} - {d.name}</div>
-  });
+  // const devices = device?.devices.map((d, index) => {
+  //   return <div key={index} className="alert alert-light">{d.number} - {d.name}</div>
+  // });
 
   return <Container>
     <h1>Node: {deviceId}</h1>
     <hr />
-    {devices}
+    <h3>Device Energy Management : <span className="badge badge-pill badge-success">Test</span></h3>
     <Link href="/devices" className="btn btn-secondary" style={{marginRight: '5px'}}>Back to Devices</Link>
     <Button onClick={unpairDevice}>Unpair Device</Button>
   </Container>;
