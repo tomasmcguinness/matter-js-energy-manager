@@ -4,6 +4,8 @@ I'm trying to create a Matter Device Energy Manager to learn more about Matter's
 
 You will need a Matter device that supports the device energy management cluster. I have been building one using the esp-matter framework. You can find that project https://github.com/tomasmcguinness/matter-esp32-tiny-dishwasher
 
+This project uses matterjs and uses nextJs for the frontend and nodeJs for the backend.
+
 ## Running
 To run this, you'll need to start both the frontend and backend.
 
