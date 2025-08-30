@@ -79,8 +79,6 @@ nodes.forEach(async (nodeId) => {
             io.emit("operationalState", value);
         }
 
-
-
         // console.log(
         //     `attributeChangedCallback ${nodeId}: Attribute ${endpointId}/${clusterId}/${attributeName} changed to ${Diagnostic.json(
         //         value,
@@ -252,9 +250,43 @@ let tariffStructure = [
     { hour: 4, startMinute: 0, endMinute: 29, price: 7.5 },
     { hour: 4, startMinute: 30, endMinute: 59, price: 7.5 },
     { hour: 5, startMinute: 0, endMinute: 29, price: 7.5 },
+    { hour: 5, startMinute: 30, endMinute: 59, price: 28 },
+    { hour: 6, startMinute: 0, endMinute: 29, price: 28 },
+    { hour: 6, startMinute: 30, endMinute: 59, price: 28 },
+    { hour: 7, startMinute: 0, endMinute: 29, price: 28 },
+    { hour: 7, startMinute: 30, endMinute: 59, price: 28 },
+    { hour: 8, startMinute: 0, endMinute: 29, price: 28 },
+    { hour: 8, startMinute: 30, endMinute: 59, price: 28 },
+    { hour: 9, startMinute: 0, endMinute: 29, price: 28 },
+    { hour: 9, startMinute: 30, endMinute: 59, price: 28 },
+    { hour: 10, startMinute: 0, endMinute: 29, price: 28 },
+    { hour: 10, startMinute: 30, endMinute: 59, price: 28 },
+    { hour: 11, startMinute: 0, endMinute: 29, price: 28 },
+    { hour: 11, startMinute: 30, endMinute: 59, price: 28 },
+    { hour: 12, startMinute: 0, endMinute: 29, price: 28 },
+    { hour: 12, startMinute: 30, endMinute: 59, price: 28 },
+    { hour: 13, startMinute: 0, endMinute: 29, price: 28 },
+    { hour: 13, startMinute: 30, endMinute: 59, price: 28 },
+    { hour: 14, startMinute: 0, endMinute: 29, price: 28 },
+    { hour: 14, startMinute: 30, endMinute: 59, price: 28 },
+    { hour: 15, startMinute: 0, endMinute: 29, price: 28 },
+    { hour: 15, startMinute: 30, endMinute: 59, price: 28 },
+    { hour: 16, startMinute: 0, endMinute: 29, price: 28 },
+    { hour: 16, startMinute: 30, endMinute: 59, price: 28 },
+    { hour: 17, startMinute: 0, endMinute: 29, price: 28 },
+    { hour: 17, startMinute: 30, endMinute: 59, price: 28 },
+    { hour: 18, startMinute: 0, endMinute: 29, price: 28 },
+    { hour: 18, startMinute: 30, endMinute: 59, price: 28 },
+    { hour: 19, startMinute: 0, endMinute: 29, price: 28 },
+    { hour: 19, startMinute: 30, endMinute: 59, price: 28 },
+    { hour: 20, startMinute: 0, endMinute: 29, price: 28 },
+    { hour: 20, startMinute: 30, endMinute: 59, price: 28 },
+    { hour: 21, startMinute: 0, endMinute: 29, price: 28 },
+    { hour: 21, startMinute: 30, endMinute: 59, price: 28 },
+    { hour: 22, startMinute: 0, endMinute: 29, price: 28 },
+    { hour: 22, startMinute: 30, endMinute: 59, price: 28 },
+    { hour: 23, startMinute: 0, endMinute: 29, price: 28 },
     { hour: 23, startMinute: 30, endMinute: 59, price: 7.5 },
-    //{ hour: 13, startMinute: 0, endMinute: 29, price: 7.5 },
-    //{ hour: 14, startMinute: 0, endMinute: 29, price: 7.5 },
 ];
 
 const generateTariff = (currentTime) => {
@@ -284,9 +316,9 @@ const generateTariff = (currentTime) => {
         let hour = date.getHours();
         let minute = date.getMinutes();
 
-        let offpeakSlots = tariffStructure.filter(slot => slot.hour === hour && minute >= slot.startMinute && minute <= slot.endMinute);
+        let slots = tariffStructure.filter(slot => slot.hour === hour && minute >= slot.startMinute && minute <= slot.endMinute);
 
-        let currentSlotType = offpeakSlots.length > 0 ? 'offpeak' : 'peak';
+        let currentSlotType = slots[0].price === 7.5 ? 'offpeak' : 'peak';
 
         if (lastDuration == 0) {
             startDate = date;
@@ -317,6 +349,18 @@ const generateTariff = (currentTime) => {
 app.get("/tariff", async (request, response) => {
     var tariff = generateTariff(Math.floor(Date.now() / 1000));
     response.send(tariff);
+});
+
+app.get("/tariff/configuration", async (request, response) => {
+    response.send(tariffStructure);
+});
+
+app.post("/tariff/configuration", async (request, response) => {
+    console.log(request.query.id);
+
+    tariffStructure[request.query.id].price = tariffStructure[request.query.id].price == 7.5 ? 28 : 7.5;
+
+    response.status(204).send();
 });
 
 const getForecast = async () => {
@@ -479,7 +523,10 @@ app.post("/optimise", async (request, response) => {
 
         let newStartTime = currentTime + cheapestSimulation.delay;
 
-        await deviceEnergyManagement.startTimeAdjustRequest({ requestedStartTime: newStartTime, cause: DeviceEnergyManagement.AdjustmentCause.LocalOptimization });
+        await deviceEnergyManagement.startTimeAdjustRequest({
+            requestedStartTime: newStartTime,
+            cause: DeviceEnergyManagement.AdjustmentCause.LocalOptimization
+        });
 
         forecast.startTime = newStartTime;
 
