@@ -75,8 +75,18 @@ nodes.forEach(async (nodeId) => {
 
     node.events.attributeChanged.on(({ path: { nodeId, clusterId, endpointId, attributeName }, value }) => {
 
+         console.log({clusterId});
+
         if (clusterId === OperationalState.id) {
             io.emit("operationalState", value);
+        }
+
+        if (clusterId === 0x98) {
+            console.log({attributeName});
+
+            if(attributeName === "optOutState") {
+                io.emit("optOutState", value);
+            }
         }
 
         // console.log(
@@ -177,18 +187,19 @@ app.get("/devices/:nodeId", async (request, response) => {
 
     const operationalStateCluster = node.getDevices()[0].getClusterClient(OperationalState.Complete);
     const dishwasherModeCluster = node.getDevices()[0].getClusterClient(DishwasherMode.Complete);
-
-    node.getDevices()[1].getClusterClient(DeviceEnergyManagement.Complete);
+    const deviceEnergyManagementCluster = node.getDevices()[1].getClusterClient(DeviceEnergyManagement.Complete);
 
     var operationState = await operationalStateCluster.getOperationalStateAttribute();
     var dishwasherMode = await dishwasherModeCluster.getCurrentModeAttribute();
+    var optOut = await deviceEnergyManagementCluster.getOptOutStateAttribute();
 
     response.send({
         id: nodeId.toString(),
         state: node.state,
         manufacturer: node?.basicInformation?.manufacturerName?.toString(),
         currentState: operationState,
-        currentMode: dishwasherMode
+        currentMode: dishwasherMode,
+        optOut: optOut,
         //devices: node.getDevices().map(device => ({ id: device.id, name: device.name, number: device.number }))
     });
 });
@@ -442,11 +453,11 @@ app.post("/optimise", async (request, response) => {
 
     var tariffSlots = generateTariff(currentTime);
 
-    console.log({ tariffSlots });
+    //console.log({ tariffSlots });
 
     var forecast = await getForecast();
 
-    console.log({ forecast });
+    //console.log({ forecast });
 
     // Turn tariff into a timeseries.
     //
@@ -459,7 +470,7 @@ app.post("/optimise", async (request, response) => {
         return accumulator;
     }, []);
 
-    console.log({ tariffTimeSeries });
+    //console.log({ tariffTimeSeries });
 
     // Turn forecast into a timeseries.
     //
@@ -472,7 +483,7 @@ app.post("/optimise", async (request, response) => {
         return accumulator;
     }, []);
 
-    console.log({ dishwasherTimeSeries });
+    //console.log({ dishwasherTimeSeries });
 
     let simulationOutcomes = [];
     let maximumSimulationDelayInHours = 12;

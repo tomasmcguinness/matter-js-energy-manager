@@ -13,17 +13,15 @@ import { Manager } from 'socket.io-client';
 
 export default function Page({ params }) {
 
+  let self = this;
+
   const { deviceId } = use(params);
 
-  console.log("Device ID: " + deviceId);
-
-  //const [device, setDevice] = useState<Device>();
-  //const [forecast, setForecast] = useState<any>();
   const [device, setDevice] = useState(null);
-  const [forecast, setForecast] = useState(null);
+  const deviceRef = useRef(device);
 
   useEffect(() => {
-    fetch(`http://localhost:3000/devices/${deviceId}`).then(r => r.json()).then(data => { setDevice(data); });
+    fetch(`http://localhost:3000/devices/${deviceId}`).then(r => r.json()).then(data => { setDevice(data); deviceRef.current = data; });
   }, []);
 
   useEffect(() => {
@@ -43,23 +41,19 @@ export default function Page({ params }) {
       }
     });
 
-    //     socket.on("power", (power: number) => {
-    //       console.log("Power Update: " + power);
-    //     });
-
-    //     socket.on("status", (nodeId: number) => {
-    //       console.log("Status Update: " + nodeId);
-    //     });
-
-    socket.on("forecast", (forecast) => {
-      console.log("Forecast Updated: " + forecast.forecastId);
-      setForecast(forecast);
+    socket.on("optOutState", (state) => {
+      console.log("Opt Out State Update: " + state);
+      console.log(deviceRef.current);
+      if(deviceRef.current) {
+        deviceRef.current.optOut = state;
+        setDevice({ ...deviceRef.current });
+      }
     });
   }, []);
 
   const unpairDevice = () => {
     let unpair = confirm("Are you sure you want to unpair this device?");
-    
+
     if (unpair) {
       fetch(`http://localhost:3000/devices/${deviceId}`, { method: "DELETE" });
     }
@@ -69,11 +63,21 @@ export default function Page({ params }) {
   //   return <div key={index} className="alert alert-light">{d.number} - {d.name}</div>
   // });
 
+  let optOutStatus = <></>;
+
+  if (device) {
+    if (device.optOut === 3) {
+      optOutStatus = <span className="badge text-bg-danger">Opted Out</span>
+    } else if (device.optOut === 0) {
+      optOutStatus = <span className="badge text-bg-success">Opted In</span>
+    }
+  }
+
   return <Container>
     <h1>Node: {deviceId}</h1>
     <hr />
-    <h3>Device Energy Management : <span className="badge badge-pill badge-success">Test</span></h3>
-    <Link href="/devices" className="btn btn-secondary" style={{marginRight: '5px'}}>Back to Devices</Link>
+    <h3>Device Energy Management : {optOutStatus}</h3>
+    <Link href="/devices" className="btn btn-secondary" style={{ marginRight: '5px' }}>Back to Devices</Link>
     <Button onClick={unpairDevice}>Unpair Device</Button>
   </Container>;
 };
