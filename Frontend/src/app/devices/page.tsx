@@ -17,12 +17,12 @@ export default function Page() {
   const [devices, setDevices] = useState<Device[]>([]);
 
   useEffect(() => {
-    fetch('http://localhost:3000/devices').then(r => r.json()).then(data => { setDevices(data); setIsLoading(false); });
+    fetch('http://localhost:4000/devices').then(r => r.json()).then(data => { setDevices(data); setIsLoading(false); });
   }, []);
 
   useEffect(() => {
 
-    const manager = new Manager("http://localhost:3000", {
+    const manager = new Manager("http://localhost:4000", {
       reconnectionDelayMax: 10000,
     });
 
@@ -75,9 +75,31 @@ export default function Page() {
     return stateBadge;
   }
 
-  const deviceTRs = devices.map((device) =>
-    <tr key={device.id} style={{ cursor: 'pointer' }} onClick={() => handleRowClick(device)}><td>{device.id}</td><td style={{ width: '1%' }}>{getStateBadge(device.state)}</td></tr>
-  );
+  const deviceTRs = devices.map((device) => {
+    const deviceTypes = device.deviceTypes.map(dt => {
+
+      var name = dt.toString();
+
+      switch (dt) {
+        case 777:
+          name = "Heat Pump";
+          break;
+        case 1296:
+          name = "Electrical Sensor";
+          break;
+        case 17:
+          name = "Power Source";
+          break;
+        case 769:
+          name = "Thermostat";
+          break;
+      }
+
+      return (<span key={dt} className="badge bg-primary" style={{ marginRight: '5px' }}>{name}</span>)
+    });
+
+    return (<tr key={device.id} style={{ cursor: 'pointer' }} onClick={() => handleRowClick(device)}><td>{device.id}</td><td>{deviceTypes}</td><td style={{ width: '1%' }}>{getStateBadge(device.state)}</td></tr>)
+  });
 
   var body = null;
 
@@ -91,7 +113,8 @@ export default function Page() {
       body = <Table striped bordered hover>
         <thead>
           <tr>
-            <th>Id</th>
+            <th>Node Id</th>
+            <th>Devices</th>
             <th>Status</th>
           </tr>
         </thead>

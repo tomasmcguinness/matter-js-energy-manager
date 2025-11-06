@@ -7,7 +7,7 @@ import { Server } from "socket.io";
 import cors from "cors";
 import { Diagnostic, NodeId } from "@matter/main";
 import { DishwasherMode, GeneralCommissioning, OperationalState } from "@matter/main/clusters";
-import { DeviceEnergyManagement } from "@matter/main/clusters";
+import { DeviceEnergyManagement, DescriptorCluster } from "@matter/main/clusters";
 import { NodeStates } from "@project-chip/matter.js/device";
 
 const app = express();
@@ -17,7 +17,7 @@ app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "http://localhost:3001",
+        origin: "http://localhost:4001",
         methods: ["GET", "POST"]
     }
 });
@@ -34,7 +34,7 @@ io.on('connection', (socket) => {
     console.log('a user connected');
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 
 server.listen(PORT, () => {
     console.log("Server Listening on PORT:", PORT);
@@ -171,7 +171,76 @@ app.get("/devices", async (request, response) => {
 
     let mapResult = nodeDetails.map(async (nodeId) => {
         const node = await commissioningController.getNode(nodeId);
-        return { id: nodeId.toString(), state: node.state, manufacturer: node?.basicInformation?.manufacturerName?.toString() }
+
+        var endpoint = node.getRootEndpoint();
+
+        const descriptorCluster = endpoint.getClusterClient(DescriptorCluster);
+
+        // Invoke the getPartsListAttribute function
+        const partsList = await descriptorCluster.getPartsListAttribute();
+
+        // var deviceTypes = [];
+
+        // await partsList.forEach(async (endpointId) => {
+        //     const endpoint = node.getDeviceById(endpointId); // Replace with actual ID
+
+        //     // Get the Descriptor cluster client
+        //     const descriptorCluster = endpoint.getClusterClient(DescriptorCluster);
+
+        //     // Retrieve the device type list
+        //     const deviceTypeList = await descriptorCluster.getDeviceTypeListAttribute();
+
+        //     for (const deviceType of deviceTypeList) {
+        //         console.log(`Device Type ID: ${deviceType.deviceType}`);
+        //         console.log(`Revision: ${deviceType.revision}`);
+
+        //         deviceTypes.push(deviceType.deviceType)
+        //     }
+        // });
+
+        // var deviceTypes = await partsList.reduce(async (accumulator, endpointId) => {
+
+        //     console.log({ accumulator});
+
+        //     const endpoint = node.getDeviceById(endpointId); // Replace with actual ID
+
+        //     // Get the Descriptor cluster client
+        //     const descriptorCluster = endpoint.getClusterClient(DescriptorCluster);
+
+        //     // Retrieve the device type list
+        //     const deviceTypeList = await descriptorCluster.getDeviceTypeListAttribute();
+
+        //     for (const deviceType of deviceTypeList) {
+        //         console.log(`Device Type ID: ${deviceType.deviceType}`);
+        //         console.log(`Revision: ${deviceType.revision}`);
+
+        //         accumulator.concat(deviceType.deviceType)
+        //     }
+
+        // }, []);
+
+        var deviceTypes = [];
+
+        for (const endpointId of partsList) {
+            const endpoint = node.getDeviceById(endpointId); 
+
+            // Get the Descriptor cluster client
+            const descriptorCluster = endpoint.getClusterClient(DescriptorCluster);
+
+            // Retrieve the device type list
+            const deviceTypeList = await descriptorCluster.getDeviceTypeListAttribute();
+
+            for (const deviceType of deviceTypeList) {
+                console.log(`Device Type ID: ${deviceType.deviceType}`);
+                console.log(`Revision: ${deviceType.revision}`);
+
+                deviceTypes.push(deviceType.deviceType)
+            }
+        }
+
+        console.log({ deviceTypes });
+
+        return { id: nodeId.toString(), state: node.state, manufacturer: node?.basicInformation?.manufacturerName?.toString(), deviceTypes }
     });
 
     const devices = await Promise.all(mapResult);
@@ -185,21 +254,25 @@ app.get("/devices/:nodeId", async (request, response) => {
 
     const node = await commissioningController.getNode(NodeId(nodeId));
 
-    const operationalStateCluster = node.getDevices()[0].getClusterClient(OperationalState.Complete);
-    const dishwasherModeCluster = node.getDevices()[0].getClusterClient(DishwasherMode.Complete);
-    const deviceEnergyManagementCluster = node.getDevices()[1].getClusterClient(DeviceEnergyManagement.Complete);
+    const devices = node.getDevices();
 
-    var operationState = await operationalStateCluster.getOperationalStateAttribute();
-    var dishwasherMode = await dishwasherModeCluster.getCurrentModeAttribute();
-    var optOut = await deviceEnergyManagementCluster.getOptOutStateAttribute();
+    console.log(devices[0]);
+
+    //const operationalStateCluster = node.getDevices()[0].getClusterClient(OperationalState.Complete);
+    //const dishwasherModeCluster = node.getDevices()[0].getClusterClient(DishwasherMode.Complete);
+    //const deviceEnergyManagementCluster = node.getDevices()[1].getClusterClient(DeviceEnergyManagement.Complete);
+
+    //var operationState = await operationalStateCluster.getOperationalStateAttribute();
+    //var dishwasherMode = await dishwasherModeCluster.getCurrentModeAttribute();
+    //var optOut = await deviceEnergyManagementCluster.getOptOutStateAttribute();
 
     response.send({
         id: nodeId.toString(),
         state: node.state,
         manufacturer: node?.basicInformation?.manufacturerName?.toString(),
-        currentState: operationState,
-        currentMode: dishwasherMode,
-        optOut: optOut,
+        //currentState: operationState,
+        //currentMode: dishwasherMode,
+        //optOut: optOut,
         //devices: node.getDevices().map(device => ({ id: device.id, name: device.name, number: device.number }))
     });
 });

@@ -16,7 +16,7 @@ const SocketComponent = () => {
       manualSetupCode,
     });
 
-    fetch('http://localhost:3000/devices', {
+    fetch('http://localhost:4000/devices', {
       headers: {
         "Content-Type": "application/json",
       },

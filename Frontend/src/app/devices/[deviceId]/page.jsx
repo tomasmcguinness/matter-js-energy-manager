@@ -21,12 +21,12 @@ export default function Page({ params }) {
   const deviceRef = useRef(device);
 
   useEffect(() => {
-    fetch(`http://localhost:3000/devices/${deviceId}`).then(r => r.json()).then(data => { setDevice(data); deviceRef.current = data; });
+    fetch(`http://localhost:4000/devices/${deviceId}`).then(r => r.json()).then(data => { setDevice(data); deviceRef.current = data; });
   }, []);
 
   useEffect(() => {
 
-    const manager = new Manager("http://localhost:3000", {
+    const manager = new Manager("http://localhost:4000", {
       reconnectionDelayMax: 10000,
     });
 
@@ -55,13 +55,9 @@ export default function Page({ params }) {
     let unpair = confirm("Are you sure you want to unpair this device?");
 
     if (unpair) {
-      fetch(`http://localhost:3000/devices/${deviceId}`, { method: "DELETE" });
+      fetch(`http://localhost:4000/devices/${deviceId}`, { method: "DELETE" });
     }
   };
-
-  // const devices = device?.devices.map((d, index) => {
-  //   return <div key={index} className="alert alert-light">{d.number} - {d.name}</div>
-  // });
 
   let optOutStatus = <></>;
 
@@ -74,7 +70,7 @@ export default function Page({ params }) {
   }
 
   return <Container>
-    <h1>Node: {deviceId}</h1>
+    <h1>{deviceId}</h1>
     <hr />
     <h3>Device Energy Management : {optOutStatus}</h3>
     <Link href="/devices" className="btn btn-secondary" style={{ marginRight: '5px' }}>Back to Devices</Link>
