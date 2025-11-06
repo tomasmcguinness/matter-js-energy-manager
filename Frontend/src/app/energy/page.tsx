@@ -13,11 +13,14 @@ export default function Page() {
 
   const [isOptimising, setIsOptimising] = useState<boolean>(false);
   const [prices, setPrices] = useState<number[]>([]);
+  const [devices, setDevices] = useState<any[]>([]);
   const [forecast, setForecast] = useState<Forecast | null>(null);
 
   useEffect(() => {
-    fetch('http://localhost:3000/tariff').then(r => r.json()).then(data => { setPrices(data); });
-    fetch('http://localhost:3000/forecast').then(r => r.status === 200 ? r.json() : null).then(data => {
+    fetch('http://localhost:4000/tariff').then(r => r.json()).then(data => { setPrices(data); });
+    fetch('http://localhost:4000/devices').then(r => r.json()).then(data => { setDevices(data); });
+
+    fetch('http://localhost:4000/forecast').then(r => r.status === 200 ? r.json() : null).then(data => {
 
       if (data) {
         let forecast: Forecast = {
@@ -35,7 +38,7 @@ export default function Page() {
       setCurrentTime(new Date());
     }, 1000);
 
-    const manager = new Manager("http://localhost:3000", {
+    const manager = new Manager("http://localhost:4000", {
       reconnectionDelayMax: 10000,
     });
 
@@ -68,27 +71,43 @@ export default function Page() {
 
   const handleOptimiseClick = () => {
     setIsOptimising(true);
-    fetch(`http://localhost:3000/optimise`, { method: "POST" }).then(() => setIsOptimising(false));
+    fetch(`http://localhost:4000/optimise`, { method: "POST" }).then(() => setIsOptimising(false));
   };
+
+  var deviceCards = devices.map((device, index) => {
+
+    return (<div key={`device_${index}`} className="card" style={{ marginBottom: '10px' }}>
+        <div className="card-header">
+          {device.name ?? `Device ${index + 1}`}
+        </div>
+        <div className="card-body">
+          
+        </div>
+      </div>);
+  });
 
   return <div>
     <h1>Energy Forecast</h1>
     <hr />
     <div style={{ position: 'relative' }} suppressHydrationWarning={true}>
 
-      <Card style={{ width: '100%', marginBottom: '10px' }}>
-        <Card.Body>
-          <Card.Title>Tariff</Card.Title>
+      <div className="card" style={{ marginBottom: '10px' }}>
+        <div className="card-header">
+          Energy Tariff
+        </div>
+        <div className="card-body">
           <TariffTimeline prices={prices} currentTime={currentTime} />
-        </Card.Body>
-      </Card>
+        </div>
+      </div>
 
-      <Card style={{ width: '100%', marginBottom: '10px' }}>
+      {deviceCards}
+
+      {/* <Card style={{ width: '100%', marginBottom: '10px' }}>
         <Card.Body>
           <Card.Title>Dishwasher</Card.Title>
           <ForecastTimeline forecast={forecast} currentTime={currentTime} />
         </Card.Body>
-      </Card>
+      </Card> */}
 
       {isOptimising && <div className="alert alert-info">
         Optimising Energy Usage

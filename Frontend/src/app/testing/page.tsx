@@ -8,7 +8,7 @@ export default function Page() {
     const [tariffStructure, setTariffStructure] = useState<any[]>([]);
 
     useEffect(() => {
-        fetch('http://localhost:3000/tariff/configuration').then(r => r.json()).then(data => { setTariffStructure(data); });
+        fetch('http://localhost:4000/tariff/configuration').then(r => r.json()).then(data => { setTariffStructure(data); });
     }, []);
 
     const updateTariff = async (sender: any) => {
@@ -17,7 +17,7 @@ export default function Page() {
         tariffStructure[sender.target.dataset.index].price = tariffStructure[sender.target.dataset.index].price == 7.5 ? 28 : 7.5;
         setTariffStructure([...tariffStructure]);
 
-        fetch(`http://localhost:3000/tariff/configuration?id=${sender.target.dataset.index}`, { method: "POST" });
+        fetch(`http://localhost:4000/tariff/configuration?id=${sender.target.dataset.index}`, { method: "POST" });
     }
 
     const rows = tariffStructure.map((tariff: any, index: number) => {

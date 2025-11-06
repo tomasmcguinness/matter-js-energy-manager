@@ -93,6 +93,12 @@ export default function Page() {
         case 769:
           name = "Thermostat";
           break;
+        case 1293:
+          name = "Device Energy Manager";
+          break;
+        case 117:
+          name = "Dishwasher";
+          break;
       }
 
       return (<span key={dt} className="badge bg-primary" style={{ marginRight: '5px' }}>{name}</span>)
