@@ -75,25 +75,21 @@ nodes.forEach(async (nodeId) => {
 
     node.events.attributeChanged.on(({ path: { nodeId, clusterId, endpointId, attributeName }, value }) => {
 
-         console.log({clusterId});
+        console.log({ clusterId });
 
         if (clusterId === OperationalState.id) {
             io.emit("operationalState", value);
         }
 
         if (clusterId === 0x98) {
-            console.log({attributeName});
+            console.log({ attributeName });
 
-            if(attributeName === "optOutState") {
+            if (attributeName === "optOutState") {
                 io.emit("optOutState", value);
             }
         }
 
-        // console.log(
-        //     `attributeChangedCallback ${nodeId}: Attribute ${endpointId}/${clusterId}/${attributeName} changed to ${Diagnostic.json(
-        //         value,
-        //     )}`,
-        // ),
+        console.log(`attributeChangedCallback ${nodeId}: Attribute ${endpointId}/${clusterId}/${attributeName} changed to ${Diagnostic.json(value)}`);
     });
 
     if (!node.isConnected) {
@@ -105,36 +101,23 @@ nodes.forEach(async (nodeId) => {
             case NodeStates.Connected:
                 console.log(`state changed: Node ${nodeId} connected!`);
 
-                //                 io.emit("status", nodeId.toString());
-
                 const devices = node.getDevices();
 
-                //                 // TODO Find the DeviceEnergyManagement dynamically cluster
-                //                 // If a device even has one.
-                //                 //
-                if (devices[1] && devices[1].number === 2) {
+                // TODO Find the DeviceEnergyManagement dynamically cluster
+                // If a device even has one.
+                //
+                if (devices[0]) {
 
                     console.log('Attempting to subscribe to the forecast');
 
-                    const deviceEnergyManagement = devices[1].getClusterClient(DeviceEnergyManagement.Complete);
+                    const deviceEnergyManagement = devices[0].getClusterClient(DeviceEnergyManagement.Complete);
 
                     if (deviceEnergyManagement) {
-
-                        //                       let forecast = await deviceEnergyManagement.getForecastAttribute();
-
-                        //                         console.log({ forecast });
-
-                        //                         energyManager.processForecast(nodeId, forecast);
-
-                        //                         //                                io.emit("forecast", forecast);
-
-                        //                         console.log('Subscribing to the forecast...');
 
                         deviceEnergyManagement.addForecastAttributeListener(value => {
                             console.log("Forecast Updated", value);
 
                             if (value.startTime === 0) {
-                                console.log('Ignoring empty forecast');
                                 io.emit("forecast", null);
                             } else {
                                 io.emit("forecast", value);
@@ -142,7 +125,7 @@ nodes.forEach(async (nodeId) => {
                         });
 
                     } else {
-                        console.error('No cluster client...');
+                        console.error('No cluster client available for the DeviceEnergyManager...');
                     }
                 }
 
@@ -163,66 +146,24 @@ nodes.forEach(async (nodeId) => {
     });
 });
 
-// console.log(`Commissioning controller started with id ${uniqueId} and label "${adminFabricLabel}"`);
-
 app.get("/devices", async (request, response) => {
 
     const nodeDetails = commissioningController.getCommissionedNodes();
 
     let mapResult = nodeDetails.map(async (nodeId) => {
+
         const node = await commissioningController.getNode(nodeId);
 
         var endpoint = node.getRootEndpoint();
 
         const descriptorCluster = endpoint.getClusterClient(DescriptorCluster);
 
-        // Invoke the getPartsListAttribute function
         const partsList = await descriptorCluster.getPartsListAttribute();
-
-        // var deviceTypes = [];
-
-        // await partsList.forEach(async (endpointId) => {
-        //     const endpoint = node.getDeviceById(endpointId); // Replace with actual ID
-
-        //     // Get the Descriptor cluster client
-        //     const descriptorCluster = endpoint.getClusterClient(DescriptorCluster);
-
-        //     // Retrieve the device type list
-        //     const deviceTypeList = await descriptorCluster.getDeviceTypeListAttribute();
-
-        //     for (const deviceType of deviceTypeList) {
-        //         console.log(`Device Type ID: ${deviceType.deviceType}`);
-        //         console.log(`Revision: ${deviceType.revision}`);
-
-        //         deviceTypes.push(deviceType.deviceType)
-        //     }
-        // });
-
-        // var deviceTypes = await partsList.reduce(async (accumulator, endpointId) => {
-
-        //     console.log({ accumulator});
-
-        //     const endpoint = node.getDeviceById(endpointId); // Replace with actual ID
-
-        //     // Get the Descriptor cluster client
-        //     const descriptorCluster = endpoint.getClusterClient(DescriptorCluster);
-
-        //     // Retrieve the device type list
-        //     const deviceTypeList = await descriptorCluster.getDeviceTypeListAttribute();
-
-        //     for (const deviceType of deviceTypeList) {
-        //         console.log(`Device Type ID: ${deviceType.deviceType}`);
-        //         console.log(`Revision: ${deviceType.revision}`);
-
-        //         accumulator.concat(deviceType.deviceType)
-        //     }
-
-        // }, []);
 
         var deviceTypes = [];
 
         for (const endpointId of partsList) {
-            const endpoint = node.getDeviceById(endpointId); 
+            const endpoint = node.getDeviceById(endpointId);
 
             // Get the Descriptor cluster client
             const descriptorCluster = endpoint.getClusterClient(DescriptorCluster);
@@ -231,14 +172,12 @@ app.get("/devices", async (request, response) => {
             const deviceTypeList = await descriptorCluster.getDeviceTypeListAttribute();
 
             for (const deviceType of deviceTypeList) {
-                console.log(`Device Type ID: ${deviceType.deviceType}`);
-                console.log(`Revision: ${deviceType.revision}`);
+                //console.log(`Device Type ID: ${deviceType.deviceType}`);
+                //console.log(`Revision: ${deviceType.revision}`);
 
                 deviceTypes.push(deviceType.deviceType)
             }
         }
-
-        console.log({ deviceTypes });
 
         return { id: nodeId.toString(), state: node.state, manufacturer: node?.basicInformation?.manufacturerName?.toString(), deviceTypes }
     });
@@ -246,35 +185,6 @@ app.get("/devices", async (request, response) => {
     const devices = await Promise.all(mapResult);
 
     response.send(devices);
-});
-
-app.get("/devices/:nodeId", async (request, response) => {
-
-    const { nodeId } = request.params;
-
-    const node = await commissioningController.getNode(NodeId(nodeId));
-
-    const devices = node.getDevices();
-
-    console.log(devices[0]);
-
-    //const operationalStateCluster = node.getDevices()[0].getClusterClient(OperationalState.Complete);
-    //const dishwasherModeCluster = node.getDevices()[0].getClusterClient(DishwasherMode.Complete);
-    //const deviceEnergyManagementCluster = node.getDevices()[1].getClusterClient(DeviceEnergyManagement.Complete);
-
-    //var operationState = await operationalStateCluster.getOperationalStateAttribute();
-    //var dishwasherMode = await dishwasherModeCluster.getCurrentModeAttribute();
-    //var optOut = await deviceEnergyManagementCluster.getOptOutStateAttribute();
-
-    response.send({
-        id: nodeId.toString(),
-        state: node.state,
-        manufacturer: node?.basicInformation?.manufacturerName?.toString(),
-        //currentState: operationState,
-        //currentMode: dishwasherMode,
-        //optOut: optOut,
-        //devices: node.getDevices().map(device => ({ id: device.id, name: device.name, number: device.number }))
-    });
 });
 
 app.post("/devices", async (request, response) => {
@@ -309,6 +219,68 @@ app.post("/devices", async (request, response) => {
     console.log(`Commissioning successfully done with nodeId ${nodeId}`);
 
     return new Response("data", { status: 200 })
+});
+
+app.get("/devices/:nodeId", async (request, response) => {
+
+    const { nodeId } = request.params;
+
+    const node = await commissioningController.getNode(NodeId(nodeId));
+
+    const devices = node.getDevices();
+
+    //const operationalStateCluster = node.getDevices()[0].getClusterClient(OperationalState.Complete);
+    //const dishwasherModeCluster = node.getDevices()[0].getClusterClient(DishwasherMode.Complete);
+    //const deviceEnergyManagementCluster = node.getDevices()[1].getClusterClient(DeviceEnergyManagement.Complete);
+
+    //var operationState = await operationalStateCluster.getOperationalStateAttribute();
+    //var dishwasherMode = await dishwasherModeCluster.getCurrentModeAttribute();
+    //var optOut = await deviceEnergyManagementCluster.getOptOutStateAttribute();
+
+    response.send({
+        id: nodeId.toString(),
+        state: node.state,
+        manufacturer: node?.basicInformation?.manufacturerName?.toString(),
+        //currentState: operationState,
+        //currentMode: dishwasherMode,
+        //optOut: optOut,
+        //devices: node.getDevices().map(device => ({ id: device.id, name: device.name, number: device.number }))
+    });
+});
+
+app.get("/devices/:nodeId/forecast", async (request, response) => {
+
+    const { nodeId } = request.params;
+
+    let node = await commissioningController.getNode(NodeId(nodeId));
+
+    const devices = node.getDevices();
+
+    var forecast = null;
+
+    if (devices[1] && devices[1].number === 2) {
+
+        const deviceEnergyManagement = devices[1].getClusterClient(DeviceEnergyManagement.Complete);
+
+        //console.log({ deviceEnergyManagement });
+
+        if (deviceEnergyManagement) {
+            forecast = await deviceEnergyManagement.getForecastAttribute();
+        }
+    }
+
+    if (forecast) {
+        console.log({ forecast });
+
+        if (forecast.startTime === 0) {
+            response.status(204).send();
+        } else {
+            response.send(forecast);
+        }
+    } else {
+        console.log('No forecast available for device. Return 204');
+        response.status(204).send();
+    }
 });
 
 app.delete("/devices/:nodeId", async (request, response) => {
@@ -489,26 +461,6 @@ const getForecast = async () => {
 
     return forecast;
 }
-
-app.get("/forecast", async (request, response) => {
-
-    let forecast = await getForecast();
-
-    if (forecast !== null) {
-        console.log({ forecast });
-
-        if (forecast.startTime === 0) {
-            response.status(204).send();
-        } else {
-            response.send(forecast);
-        }
-    } else {
-        console.log('Return 204');
-        response.status(204).send();
-    }
-
-    return;
-})
 
 app.post("/optimise", async (request, response) => {
 

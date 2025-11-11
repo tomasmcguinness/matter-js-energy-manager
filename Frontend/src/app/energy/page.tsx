@@ -6,6 +6,7 @@ import ForecastTimeline from '../../forecastTimeline.tsx';
 import { useEffect, useState } from 'react';
 import { Forecast } from '../../device.ts';
 import { Manager } from 'socket.io-client';
+import DeviceView from '../../deviceView.tsx';
 
 export default function Page() {
 
@@ -14,59 +15,15 @@ export default function Page() {
   const [isOptimising, setIsOptimising] = useState<boolean>(false);
   const [prices, setPrices] = useState<number[]>([]);
   const [devices, setDevices] = useState<any[]>([]);
-  const [forecast, setForecast] = useState<Forecast | null>(null);
 
   useEffect(() => {
     fetch('http://localhost:4000/tariff').then(r => r.json()).then(data => { setPrices(data); });
     fetch('http://localhost:4000/devices').then(r => r.json()).then(data => { setDevices(data); });
 
-    fetch('http://localhost:4000/forecast').then(r => r.status === 200 ? r.json() : null).then(data => {
-
-      if (data) {
-        let forecast: Forecast = {
-          startTime: data.startTime,
-          endTime: data.endTime,
-          slots: [...data.slots]
-        }
-        setForecast(forecast);
-      } else {
-        setForecast(null);
-      }
-    });
-
     setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
-
-    const manager = new Manager("http://localhost:4000", {
-      reconnectionDelayMax: 10000,
-    });
-
-    const socket = manager.socket("/");
-
-    manager.open((err: any) => {
-      if (err) {
-        // an error has occurred
-      } else {
-        // the connection was successfully established
-        console.log("Socket connection established");
-      }
-    });
-
-    socket.on("forecast", (data: Forecast) => {
-      console.log("Forecast Updated");
-
-      if (data) {
-        let forecast: Forecast = {
-          startTime: data.startTime,
-          endTime: data.endTime,
-          slots: [...data.slots]
-        }
-        setForecast(forecast);
-      } else {
-        setForecast(null);
-      }
-    });
+    
   }, []);
 
   const handleOptimiseClick = () => {
@@ -81,7 +38,7 @@ export default function Page() {
           {device.name ?? `Device ${index + 1}`}
         </div>
         <div className="card-body">
-          
+          <DeviceView nodeId={device.id} currentTime={currentTime} />
         </div>
       </div>);
   });
@@ -93,7 +50,7 @@ export default function Page() {
 
       <div className="card" style={{ marginBottom: '10px' }}>
         <div className="card-header">
-          Energy Tariff
+          Electricity Cost Next 24 Hours
         </div>
         <div className="card-body">
           <TariffTimeline prices={prices} currentTime={currentTime} />

@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import Table from 'react-bootstrap/Table';
 import Link from 'next/link'
-import Spinner from 'react-bootstrap/Spinner';
 import Badge from 'react-bootstrap/Badge';
 import Container from 'react-bootstrap/Container';
 import Alert from 'react-bootstrap/Alert';
@@ -120,7 +119,7 @@ export default function Page() {
         <thead>
           <tr>
             <th>Node Id</th>
-            <th>Devices</th>
+            <th>Properties</th>
             <th>Status</th>
           </tr>
         </thead>

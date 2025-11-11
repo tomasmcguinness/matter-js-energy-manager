@@ -3,7 +3,7 @@ import { CommissioningController } from "@project-chip/matter.js";
 import { DeviceEnergyManagement } from "@matter/main/clusters";
 import { NodeStates } from "@project-chip/matter.js/device";
 import { getSocketServer } from "./socketServer.js";
-import { getEnergyManager} from "./energyManager.js"
+import { getEnergyManager } from "./energyManager.js"
 
 export function getController() {
     return globalThis.matterServer;
@@ -49,13 +49,10 @@ export const initializeMatterServer = async () => {
         nodes.forEach(async (nodeId) => {
             const node = await commissioningController.getNode(nodeId);
 
-            // node.events.attributeChanged.on(({ path: { nodeId, clusterId, endpointId, attributeName }, value }) =>
-            //     console.log(
-            //         `attributeChangedCallback ${nodeId}: Attribute ${endpointId}/${clusterId}/${attributeName} changed to ${Diagnostic.json(
-            //             value,
-            //         )}`,
-            //     ),
-            // );
+            // For debugging, log all attribute changes
+            node.events.attributeChanged.on(({ path: { nodeId, clusterId, endpointId, attributeName }, value }) =>
+                console.log(`attributeChangedCallback ${nodeId}: Attribute ${endpointId}/${clusterId}/${attributeName} changed to ${Diagnostic.json(value)}`),
+            );
 
             if (!node.isConnected) {
                 node.connect();
@@ -73,11 +70,11 @@ export const initializeMatterServer = async () => {
                         // TODO Find the DeviceEnergyManagement dynamically cluster
                         // If a device even has one.
                         //
-                        if (devices[1] && devices[1].number === 2) {
+                        if (devices[0]) {
 
                             console.log('Attempting to subscribe to the forecast');
 
-                            const deviceEnergyManagement = devices[1].getClusterClient(DeviceEnergyManagement.Complete);
+                            const deviceEnergyManagement = devices[0].getClusterClient(DeviceEnergyManagement.Complete);
 
                             if (deviceEnergyManagement) {
 
@@ -87,13 +84,13 @@ export const initializeMatterServer = async () => {
 
                                 energyManager.processForecast(nodeId, forecast);
 
-//                                io.emit("forecast", forecast);
+                                io.emit("forecast", forecast);
 
                                 console.log('Subscribing to the forecast...');
 
                                 deviceEnergyManagement.addForecastAttributeListener(value => {
                                     console.log("Forecast Updated", value);
-                                    //io.emit("forecast", value);
+                                    io.emit("forecast", value);
                                 });
 
                             } else {
