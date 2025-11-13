@@ -1,38 +1,30 @@
 'use client'
 
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine } from 'recharts';
+
 type TariffTimelineProps = {
     prices: any[];
-    currentTime: Date;
 };
 
-const TariffTimeline = ({ prices, currentTime }: TariffTimelineProps) => {
+function formatXAxis(tickItem) {
+    return "test";
+}
 
-     if (prices == null || prices.length == 0) {
+const TariffTimeline = ({ prices }: TariffTimelineProps) => {
+
+    if (prices == null || prices.length == 0) {
         return <div className="alert alert-info" style={{ marginBottom: '0' }}>No Tariff Data Available</div>;
     }
 
-    let slots = prices.map((tariffSlot: any, index) => {
-        let slotClass = tariffSlot.type == "peak" ? "slot peak" : "slot off-peak";
-        let width = tariffSlot.duration * 0.03 - 3; // Account for border
-        return <div key={index} className={slotClass} style={{width: width}}>{tariffSlot.price}p <span className="startTime">{new Date(tariffSlot.startDate).toLocaleTimeString('en-GB', { hour12: false })}</span></div>;
-    });
-
-    const computeOffset = (startTime: number) => {
-        let startTimeInMilli = startTime * 1000;
-
-        let differenceInMilli = startTimeInMilli - currentTime!.getTime();
-
-        let differenceInSeconds = Math.round(differenceInMilli / 1000);
-
-        return `${differenceInSeconds * 0.03}px`;
-    }
-
-    return <div className="tariffForecastContainer">
-        <div className="slotsContainer" style={{ left: computeOffset(prices[0].startTime) }}>
-            {slots}
-        </div>
-        <span>{currentTime.toLocaleTimeString('en-GB', { hour12: false })}</span>
-    </div>;
+    return <LineChart style={{ width: '100%', height: '100%', maxHeight: '30vh', aspectRatio: 1.618 }} responsive data={prices}    >
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="startDate" tickFormatter={formatXAxis} />
+        <YAxis width="auto" />
+        <Tooltip />
+        <Legend />
+        <Line type="stepBefore" dataKey="price" stroke="#8884d8" activeDot={{ r: 8 }} />
+        <ReferenceLine strokeDasharray="3 3" x={0} stroke="red" />
+    </LineChart>;
 }
 
 export default TariffTimeline;

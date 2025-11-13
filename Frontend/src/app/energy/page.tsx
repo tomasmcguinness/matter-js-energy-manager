@@ -20,9 +20,12 @@ export default function Page() {
     fetch('http://localhost:4000/tariff').then(r => r.json()).then(data => { setPrices(data); });
     fetch('http://localhost:4000/devices').then(r => r.json()).then(data => { setDevices(data); });
 
-    setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
+    // TODO This timer causes the tariff graph to re-render every second, which is unnecessary.
+    // setInterval(() => {
+    //   setCurrentTime(new Date());
+    // }, 1000);
+
+    setCurrentTime(new Date())
     
   }, []);
 
@@ -35,7 +38,7 @@ export default function Page() {
 
     return (<div key={`device_${index}`} className="card" style={{ marginBottom: '10px' }}>
         <div className="card-header">
-          {device.name ?? `Device ${index + 1}`}
+          {device.id} {device.optOutState}
         </div>
         <div className="card-body">
           <DeviceView nodeId={device.id} currentTime={currentTime} />

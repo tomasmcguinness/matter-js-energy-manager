@@ -62,7 +62,6 @@ const DeviceView = ({ nodeId, currentTime }: DeviceViewProps) => {
     }, []);
 
     return <div>
-        <h2>Device {nodeId}</h2>
         <ForecastTimeline forecast={forecast} currentTime={currentTime}  />
     </div>;
 };

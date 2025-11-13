@@ -15,6 +15,7 @@
     "@project-chip/matter.js-tools": "^0.10.7",
     "cors": "^2.8.5",
     "express": "^5.1.0",
+    "recharts": "^3.4.1",
     "socket.io": "^4.8.1"
   }
 }

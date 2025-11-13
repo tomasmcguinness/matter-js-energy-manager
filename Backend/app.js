@@ -9,6 +9,7 @@ import { Diagnostic, NodeId } from "@matter/main";
 import { DishwasherMode, GeneralCommissioning, OperationalState } from "@matter/main/clusters";
 import { DeviceEnergyManagement, DescriptorCluster } from "@matter/main/clusters";
 import { NodeStates } from "@project-chip/matter.js/device";
+import { start } from "repl";
 
 const app = express();
 app.use(express.json());
@@ -117,10 +118,10 @@ nodes.forEach(async (nodeId) => {
                         deviceEnergyManagement.addForecastAttributeListener(value => {
                             console.log("Forecast Updated", value);
 
-                            if (value.startTime === 0) {
-                                io.emit("forecast", null);
-                            } else {
+                            if (value) {
                                 io.emit("forecast", value);
+                            } else {
+                                io.emit("forecast", null);
                             }
                         });
 
@@ -163,6 +164,7 @@ app.get("/devices", async (request, response) => {
         var deviceTypes = [];
 
         for (const endpointId of partsList) {
+
             const endpoint = node.getDeviceById(endpointId);
 
             // Get the Descriptor cluster client
@@ -172,14 +174,31 @@ app.get("/devices", async (request, response) => {
             const deviceTypeList = await descriptorCluster.getDeviceTypeListAttribute();
 
             for (const deviceType of deviceTypeList) {
-                //console.log(`Device Type ID: ${deviceType.deviceType}`);
-                //console.log(`Revision: ${deviceType.revision}`);
-
                 deviceTypes.push(deviceType.deviceType)
             }
         }
 
-        return { id: nodeId.toString(), state: node.state, manufacturer: node?.basicInformation?.manufacturerName?.toString(), deviceTypes }
+        const devices = node.getDevices();
+
+        const firstEndpoint = devices[1];
+
+        const deviceEnergyManagementCluster = firstEndpoint.getClusterClient(DeviceEnergyManagement.Complete);
+
+        var optOutState = null;
+        var forecast = null;
+
+        if (deviceEnergyManagementCluster) {
+            optOutState = await deviceEnergyManagementCluster.getOptOutStateAttribute();
+            forecast = await deviceEnergyManagement.getForecastAttribute();
+        }
+
+        return {
+            id: nodeId.toString(), state: node.state,
+            manufacturer: node?.basicInformation?.manufacturerName?.toString(), 
+            deviceTypes, 
+            optOutState,
+            forecast
+        }
     });
 
     const devices = await Promise.all(mapResult);
@@ -346,58 +365,15 @@ let tariffStructure = [
 ];
 
 const generateTariff = (currentTime) => {
+
     let tariffSlots = [];
 
-    let projectionLengthInSeconds = 24 * 60 * 60;
+    let currentDate = new Date();
 
-    // Using the current time, generate slots for each second.
-    //
-    let now = currentTime;
-    let max = now + projectionLengthInSeconds;
-
-    // Process each second for the next 12 hours.
-    // Group into slots
-    //
-    var lastSlotType;
-    var lastDuration = 0;
-    var startDate = now;
-
-    var totalMinutesProcessed = 0;
-    for (var i = now; i < max; i++) {
-
-        totalMinutesProcessed++;
-
-        let date = new Date(Math.floor(i * 1000));
-
-        let hour = date.getHours();
-        let minute = date.getMinutes();
-
-        let slots = tariffStructure.filter(slot => slot.hour === hour && minute >= slot.startMinute && minute <= slot.endMinute);
-
-        let currentSlotType = slots[0].price === 7.5 ? 'offpeak' : 'peak';
-
-        if (lastDuration == 0) {
-            startDate = date;
-            lastSlotType = currentSlotType;
-            lastDuration++;
-        }
-
-        // If we're still in the same slot type, increment the duration.
-        //
-        if (currentSlotType == lastSlotType) {
-            lastDuration++;
-        }
-        else {
-            tariffSlots.push({ startDate: startDate, type: lastSlotType, price: lastSlotType == 'offpeak' ? 7.5 : 28, duration: lastDuration });
-            lastDuration = 0;
-        }
-    }
-
-    tariffSlots.push({ startDate: startDate, type: lastSlotType, price: lastSlotType == 'offpeak' ? 7.5 : 28, duration: lastDuration });
-
-    if (totalMinutesProcessed != projectionLengthInSeconds) {
-        console.error("Tariff length is not the expected value. Something went wrong!");
-    }
+    tariffStructure.forEach(element => {
+        let startDate = currentDate.setHours(element.hour, element.startMinute, 0, 0);
+        tariffSlots.push({ startDate: startDate, price: element.price });
+    });
 
     return tariffSlots;
 }
