@@ -7,7 +7,7 @@ type TariffTimelineProps = {
 };
 
 function formatXAxis(tickItem) {
-    return "test";
+    return new Date(tickItem).toLocaleTimeString();
 }
 
 const TariffTimeline = ({ prices }: TariffTimelineProps) => {
@@ -22,8 +22,8 @@ const TariffTimeline = ({ prices }: TariffTimelineProps) => {
         <YAxis width="auto" />
         <Tooltip />
         <Legend />
-        <Line type="stepBefore" dataKey="price" stroke="#8884d8" activeDot={{ r: 8 }} />
-        <ReferenceLine strokeDasharray="3 3" x={0} stroke="red" />
+        <Line type="stepAfter" dataKey="price" stroke="#8884d8" activeDot={{ r: 8 }} />
+        <ReferenceLine strokeDasharray="3 3" x={new Date().getTime()/1000} stroke="red" />
     </LineChart>;
 }
 

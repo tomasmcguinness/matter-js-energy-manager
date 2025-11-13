@@ -1,11 +1,7 @@
 'use client'
 
-import Card from 'react-bootstrap/Card';
 import TariffTimeline from '../../tariffTimeline.tsx';
-import ForecastTimeline from '../../forecastTimeline.tsx';
 import { useEffect, useState } from 'react';
-import { Forecast } from '../../device.ts';
-import { Manager } from 'socket.io-client';
 import DeviceView from '../../deviceView.tsx';
 
 export default function Page() {
@@ -53,7 +49,7 @@ export default function Page() {
 
       <div className="card" style={{ marginBottom: '10px' }}>
         <div className="card-header">
-          Electricity Cost Next 24 Hours
+          Electricity Price
         </div>
         <div className="card-body">
           <TariffTimeline prices={prices} currentTime={currentTime} />

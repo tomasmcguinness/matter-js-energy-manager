@@ -2,14 +2,13 @@ import { Environment, StorageService } from "@matter/main";
 import { CommissioningController } from "@project-chip/matter.js";
 import { ManualPairingCodeCodec } from "@matter/main/types";
 import express from "express";
-import http, { get } from "http"
+import http from "http"
 import { Server } from "socket.io";
 import cors from "cors";
 import { Diagnostic, NodeId } from "@matter/main";
-import { DishwasherMode, GeneralCommissioning, OperationalState } from "@matter/main/clusters";
+import { GeneralCommissioning, OperationalState } from "@matter/main/clusters";
 import { DeviceEnergyManagement, DescriptorCluster } from "@matter/main/clusters";
 import { NodeStates } from "@project-chip/matter.js/device";
-import { start } from "repl";
 
 const app = express();
 app.use(express.json());
@@ -362,6 +361,7 @@ let tariffStructure = [
     { hour: 22, startMinute: 30, endMinute: 59, price: 28 },
     { hour: 23, startMinute: 0, endMinute: 29, price: 28 },
     { hour: 23, startMinute: 30, endMinute: 59, price: 7.5 },
+    { hour: 0, startMinute: 0, endMinute: 29, price: 7.5 },
 ];
 
 const generateTariff = (currentTime) => {
@@ -397,21 +397,6 @@ app.post("/tariff/configuration", async (request, response) => {
 
 const getForecast = async () => {
 
-    // let startDelayInMinutes = 0;
-    // let durationInMinutes = 90;
-
-    // let currentTime = Math.round(Date.now() / 1000);
-
-    // All matter times are in seconds since epoch and durations are in seconds.
-    //
-    // let forecast = {
-    //     startTime: currentTime + (startDelayInMinutes * 60),
-    //     endTime: currentTime + (startDelayInMinutes * 60) + (durationInMinutes * 60),
-    //     slots: [{ nominalPower: 3000, duration: durationInMinutes * 60 }]
-    // };
-
-    // console.log({ forecast });
-
     // Fetch the current forecast from the device.
     //
     const nodeDetails = await commissioningController.getCommissionedNodes();
@@ -427,8 +412,6 @@ const getForecast = async () => {
     if (devices[1] && devices[1].number === 2) {
 
         const deviceEnergyManagement = devices[1].getClusterClient(DeviceEnergyManagement.Complete);
-
-        //console.log({ deviceEnergyManagement });
 
         if (deviceEnergyManagement) {
             forecast = await deviceEnergyManagement.getForecastAttribute();
