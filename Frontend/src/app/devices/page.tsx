@@ -92,6 +92,9 @@ export default function Page() {
         case 769:
           name = "Thermostat";
           break;
+        case 770:
+          name = "Temperature Sensor";
+          break;
         case 1293:
           name = "Device Energy Manager";
           break;
@@ -119,7 +122,7 @@ export default function Page() {
         <thead>
           <tr>
             <th>Node Id</th>
-            <th>Properties</th>
+            <th>Devices</th>
             <th>Status</th>
           </tr>
         </thead>

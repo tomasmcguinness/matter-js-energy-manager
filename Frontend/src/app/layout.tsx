@@ -21,8 +21,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <NavbarBrand href="/">Energy Manager</NavbarBrand>
             <Nav className="me-auto">
               <NavLink href="/">Home</NavLink>
-              <NavLink href="/devices">Devices</NavLink>
               <NavLink href="/energy">Energy</NavLink>
+              <NavLink href="/devices">Devices</NavLink>
               <NavLink href="/testing">Testing</NavLink>
             </Nav>
           </Container>

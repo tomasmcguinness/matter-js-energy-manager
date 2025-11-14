@@ -1,5 +1,6 @@
 'use client'
 
+import { useRef } from "react";
 import { Forecast } from "./device.ts";
 import {
     Chart as ChartJS,
@@ -24,15 +25,14 @@ ChartJS.register(
 
 type EnergyTimelineProps = {
     forecast?: Forecast;
-    currentTime?: Date;
 };
 
-const ForecastTimeline = ({ forecast, currentTime }: EnergyTimelineProps) => {
+const ForecastTimeline = ({ forecast }: EnergyTimelineProps) => {
 
     console.log("Rendering EnergyTimeline with forecast:", forecast);
 
     if (forecast == null) {
-        return <div className="alert alert-info" style={{ marginBottom: '0' }}>No energy usage currently forecast</div>;
+        return <div className="alert alert-info" style={{ marginBottom: '0' }}>No power usage currently forecast</div>;
     }
 
     let slots = forecast.slots.map((slot, index) => {
@@ -41,24 +41,37 @@ const ForecastTimeline = ({ forecast, currentTime }: EnergyTimelineProps) => {
 
         const key = `slot_${index}`;
         const width =  (slot.defaultDuration / 86400) * 100; // Scale width for better visibility
-        console.log({width});
-        return <div className="slot" key={key} style={{ width: `${width}%` }}>{slot.nominalPower/1000000}kW</div>;
+        
+        return <div className="slot" key={key} style={{ width: `calc(${width}% - 1px)` }}>{(slot.nominalPower/1000000).toFixed(3)}kW</div>;
     });
 
-    const computeOffset = (startTime: number) => {
+    const computeOffset = (startTimeInSeconds: number) => {
 
+        // Always show relative to midnight today.
+        //
         let today = new Date();
         today.setHours(0, 0, 0, 0);
+
         let todayInSeconds = today.getTime() / 1000;
 
-        let timeDifference = startTime - todayInSeconds;
+        console.log({todayInSeconds, startTimeInSeconds});
 
-        return `${timeDifference}px`;
+        let timeDifference = startTimeInSeconds - todayInSeconds;
+
+        // Get the width of the container in pixels
+        //
+        var width = containerRef.current!.getBoundingClientRect().width;
+
+        var pixelsPerSection = width / 86400; // pixels per second
+
+        return `${pixelsPerSection * timeDifference}px`;
     }
+
+    const containerRef = useRef(null);
 
     return <div className="energyForecastContainer">
         <div className="forecastContainer" style={{ left: computeOffset(forecast.startTime) }}>
-            <div className="slotsContainer">
+            <div className="slotsContainer" ref={containerRef}>
                 {slots}
             </div>
             <span className="startTime">{new Date(forecast.startTime * 1000).toLocaleTimeString('en-GB', { hour12: false })}</span>

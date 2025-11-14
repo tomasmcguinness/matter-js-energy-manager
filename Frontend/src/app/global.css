@@ -47,8 +47,9 @@
     width: 100px;
     padding: 8px;
     text-align: center;
-    border-right: '1px solid white';
+    border-right: 1px solid white;
     border-radius: 5px;
+    white-space: nowrap;
 }
 
 .energyForecastContainer .slotsContainer .slot.hatched {

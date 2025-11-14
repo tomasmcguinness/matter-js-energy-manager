@@ -80,8 +80,6 @@ export const initializeMatterServer = async () => {
 
                                 let forecast = await deviceEnergyManagement.getForecastAttribute();
 
-                                console.log({ forecast });
-
                                 energyManager.processForecast(nodeId, forecast);
 
                                 io.emit("forecast", forecast);

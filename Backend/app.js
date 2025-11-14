@@ -101,16 +101,16 @@ nodes.forEach(async (nodeId) => {
             case NodeStates.Connected:
                 console.log(`state changed: Node ${nodeId} connected!`);
 
-                const devices = node.getDevices();
+                var endpoint = node.getDeviceById(1);
 
                 // TODO Find the DeviceEnergyManagement dynamically cluster
                 // If a device even has one.
                 //
-                if (devices[0]) {
+                if (endpoint) {
 
                     console.log('Attempting to subscribe to the forecast');
 
-                    const deviceEnergyManagement = devices[0].getClusterClient(DeviceEnergyManagement.Complete);
+                    const deviceEnergyManagement = endpoint.getClusterClient(DeviceEnergyManagement.Complete);
 
                     if (deviceEnergyManagement) {
 
@@ -177,26 +177,10 @@ app.get("/devices", async (request, response) => {
             }
         }
 
-        const devices = node.getDevices();
-
-        const firstEndpoint = devices[1];
-
-        const deviceEnergyManagementCluster = firstEndpoint.getClusterClient(DeviceEnergyManagement.Complete);
-
-        var optOutState = null;
-        var forecast = null;
-
-        if (deviceEnergyManagementCluster) {
-            optOutState = await deviceEnergyManagementCluster.getOptOutStateAttribute();
-            forecast = await deviceEnergyManagement.getForecastAttribute();
-        }
-
         return {
             id: nodeId.toString(), state: node.state,
             manufacturer: node?.basicInformation?.manufacturerName?.toString(), 
             deviceTypes, 
-            optOutState,
-            forecast
         }
     });
 
@@ -245,24 +229,10 @@ app.get("/devices/:nodeId", async (request, response) => {
 
     const node = await commissioningController.getNode(NodeId(nodeId));
 
-    const devices = node.getDevices();
-
-    //const operationalStateCluster = node.getDevices()[0].getClusterClient(OperationalState.Complete);
-    //const dishwasherModeCluster = node.getDevices()[0].getClusterClient(DishwasherMode.Complete);
-    //const deviceEnergyManagementCluster = node.getDevices()[1].getClusterClient(DeviceEnergyManagement.Complete);
-
-    //var operationState = await operationalStateCluster.getOperationalStateAttribute();
-    //var dishwasherMode = await dishwasherModeCluster.getCurrentModeAttribute();
-    //var optOut = await deviceEnergyManagementCluster.getOptOutStateAttribute();
-
     response.send({
         id: nodeId.toString(),
         state: node.state,
         manufacturer: node?.basicInformation?.manufacturerName?.toString(),
-        //currentState: operationState,
-        //currentMode: dishwasherMode,
-        //optOut: optOut,
-        //devices: node.getDevices().map(device => ({ id: device.id, name: device.name, number: device.number }))
     });
 });
 
@@ -270,17 +240,19 @@ app.get("/devices/:nodeId/forecast", async (request, response) => {
 
     const { nodeId } = request.params;
 
+    console.log(`Fetching forecast for device ${nodeId}`);
+
     let node = await commissioningController.getNode(NodeId(nodeId));
 
-    const devices = node.getDevices();
+    const endpoint = node.getDeviceById(1);
 
     var forecast = null;
 
-    if (devices[1] && devices[1].number === 2) {
+    if (endpoint) {
 
-        const deviceEnergyManagement = devices[1].getClusterClient(DeviceEnergyManagement.Complete);
+        const deviceEnergyManagement = endpoint.getClusterClient(DeviceEnergyManagement.Complete);
 
-        //console.log({ deviceEnergyManagement });
+        console.log({ deviceEnergyManagement });
 
         if (deviceEnergyManagement) {
             forecast = await deviceEnergyManagement.getForecastAttribute();

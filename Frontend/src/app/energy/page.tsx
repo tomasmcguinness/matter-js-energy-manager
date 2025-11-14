@@ -10,19 +10,14 @@ export default function Page() {
 
   const [isOptimising, setIsOptimising] = useState<boolean>(false);
   const [prices, setPrices] = useState<number[]>([]);
+
   const [devices, setDevices] = useState<any[]>([]);
 
   useEffect(() => {
     fetch('http://localhost:4000/tariff').then(r => r.json()).then(data => { setPrices(data); });
     fetch('http://localhost:4000/devices').then(r => r.json()).then(data => { setDevices(data); });
 
-    // TODO This timer causes the tariff graph to re-render every second, which is unnecessary.
-    // setInterval(() => {
-    //   setCurrentTime(new Date());
-    // }, 1000);
-
     setCurrentTime(new Date())
-    
   }, []);
 
   const handleOptimiseClick = () => {
@@ -57,13 +52,6 @@ export default function Page() {
       </div>
 
       {deviceCards}
-
-      {/* <Card style={{ width: '100%', marginBottom: '10px' }}>
-        <Card.Body>
-          <Card.Title>Dishwasher</Card.Title>
-          <ForecastTimeline forecast={forecast} currentTime={currentTime} />
-        </Card.Body>
-      </Card> */}
 
       {isOptimising && <div className="alert alert-info">
         Optimising Energy Usage

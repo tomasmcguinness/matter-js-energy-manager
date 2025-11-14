@@ -28,7 +28,7 @@ export default function Page() {
 
     return <Container>
         <div>
-            Tariff Configuration
+            <h1>Tariff Configuration</h1>
             <hr />
             <table className="table bordered table-striped table-hover">
                 <thead>
@@ -36,7 +36,7 @@ export default function Page() {
                         <th>Hour</th>
                         <th>Start Minute</th>
                         <th>End Minute</th>
-                        <th>Peak</th>
+                        <th>Off-Peak</th>
                     </tr>
                 </thead>
                 <tbody>

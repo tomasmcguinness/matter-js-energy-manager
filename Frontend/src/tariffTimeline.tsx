@@ -7,7 +7,8 @@ type TariffTimelineProps = {
 };
 
 function formatXAxis(tickItem) {
-    return new Date(tickItem).toLocaleTimeString();
+    var date = new Date(tickItem);
+    return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
 }
 
 const TariffTimeline = ({ prices }: TariffTimelineProps) => {
