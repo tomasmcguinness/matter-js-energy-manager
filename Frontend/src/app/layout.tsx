@@ -3,9 +3,7 @@ import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import NavbarBrand from 'react-bootstrap/NavbarBrand';
 import NavLink from 'react-bootstrap/NavLink';
-// import Alert from 'react-bootstrap/Alert';
 import '../app/global.css';
-import { useEffect } from 'react';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 

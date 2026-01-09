@@ -74,8 +74,8 @@ export default function Page() {
     return stateBadge;
   }
 
-  const deviceTRs = devices.map((device) => {
-    const deviceTypes = device.deviceTypes.map(dt => {
+  const deviceTRs = devices.map((device:any) => {
+    const deviceTypes = device.deviceTypes.map((dt:any) => {
 
       var name = dt.toString();
 
@@ -106,7 +106,12 @@ export default function Page() {
       return (<span key={dt} className="badge bg-primary" style={{ marginRight: '5px' }}>{name}</span>)
     });
 
-    return (<tr key={device.id} style={{ cursor: 'pointer' }} onClick={() => handleRowClick(device)}><td>{device.id}</td><td>{deviceTypes}</td><td style={{ width: '1%' }}>{getStateBadge(device.state)}</td></tr>)
+    return (<tr key={device.id} style={{ cursor: 'pointer' }} onClick={() => handleRowClick(device)}>
+      <td>{device.id}</td>
+      <td>{device.vendorName}</td>
+      <td>{device.productName}</td>
+      <td>{deviceTypes}</td>
+      <td style={{ width: '1%' }}>{getStateBadge(device.state)}</td></tr>)
   });
 
   var body = null;
@@ -122,6 +127,8 @@ export default function Page() {
         <thead>
           <tr>
             <th>Node Id</th>
+            <th>Vendor</th>
+            <th>Product</th>
             <th>Devices</th>
             <th>Status</th>
           </tr>

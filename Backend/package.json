@@ -1,21 +1,28 @@
 {
-  "name": "backend",
-  "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "type": "module",
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
-    "@matter/main": "^0.15.6",
+    "@matter/main": "0.15.6",
     "@project-chip/matter.js": "^0.15.6",
     "@project-chip/matter.js-tools": "^0.10.7",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "recharts": "^3.4.1",
     "socket.io": "^4.8.1"
-  }
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.1.0",
+    "typescript": "~5.8.3"
+  },
+  "name": "matter-app",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "prepare": "tsc",
+    "build": "tsc",
+    "app": "node --enable-source-maps dist/main.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "clean": "node -e 'fs.rmSync(\"dist\", { recursive: true, force: true })'"
+  },
+  "description": "An Energy Manager built on matter-js",
+  "author": "user.name=Tomas McGuinness <user.email=tomas@tomasmcguinness.com>"
 }
