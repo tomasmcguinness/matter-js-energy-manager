@@ -9,16 +9,10 @@ import {
     AttributeElement,
     ClusterElement,
     ClusterModel,
-    CommandElement,
-    DatatypeElement,
-    EventElement,
-    FieldElement,
 } from "@matter/main/model";
 import {
     Attribute,
     ClusterRegistry,
-    Command,
-    Event,
     MutableCluster,
     Priority,
     TlvField,
@@ -33,6 +27,8 @@ import {
     TlvUInt16,
     TypeFromSchema,
     TlvInt32,
+    TlvInt64,
+    TlvUInt8,
 } from "@matter/main/types";
 
 // export enum TariffUnit {
@@ -63,18 +59,14 @@ const commodityTariffClusterId = ClusterId(0x0700);
  */
 export namespace CommodityTariffFunctionality {
 
-    export const TlvTariffPeriod = TlvObject({
-        label: TlvField(0, TlvString.bound({ maxLength: 128 }))
-    });
-
     export const TlvCurrency = TlvObject({
-        tariffLabel: TlvField(0, TlvString.bound({ maxLength: 128 })),
-        providerName: TlvField(0, TlvString.bound({ maxLength: 128 }))
+        currency: TlvField(0, TlvUInt16),
+        decimalPoints: TlvField(1, TlvUInt8)
     });
 
     export const TlvTariffInformation = TlvObject({
-        tariffLabel: TlvField(0, TlvString.bound({ maxLength: 128 })),
-        providerName: TlvField(1, TlvString.bound({ maxLength: 128 })),
+        tariffLabel: TlvField(0, TlvNullable(TlvString.bound({ maxLength: 128 }))),
+        providerName: TlvField(1, TlvNullable(TlvString.bound({ maxLength: 128 }))),
         currency: TlvField(2, TlvCurrency)
     });
 
@@ -95,17 +87,18 @@ export namespace CommodityTariffFunctionality {
     });
 
     export const TlvTariffPrice = TlvObject({
-        price: TlvField(1, TlvUInt32),
+        price: TlvField(1, TlvInt64),
     });
 
     export const TlvTariffComponent = TlvObject({
         tariffComponentID: TlvField(0, TlvUInt32),
-        Price: TlvField(2, TlvTariffPrice)
+        price: TlvField(1, TlvTariffPrice)
     });
 
-    /**
-     * @see {@link Cluster}
-     */
+    export const TlvTariffPeriod = TlvObject({
+        label: TlvField(0, TlvString.bound({ maxLength: 128 }))
+    });
+
     export const ClusterInstance = MutableCluster({
         id: commodityTariffClusterId,
         name: "CommodityTariffFunctionality",
@@ -113,11 +106,11 @@ export namespace CommodityTariffFunctionality {
 
         attributes: {
             tariffInfo: Attribute(0x0, TlvTariffInformation),
-            tariffUnit: Attribute(0x1, TlvNullable(TlvInt8)),
-            DayEntries: Attribute(0x0E, TlvArray(TlvDayEntry, { maxLength: 672 })),
-            DayPatterns: Attribute(0x0E, TlvArray(TlvDayPattern, { maxLength: 28 })),
-            CalendarPeriods: Attribute(0x0E, TlvArray(TlvCalendarPeriod, { maxLength: 4 })),
-            tariffComponents: Attribute(0x0E, TlvArray(TlvTariffComponent, { maxLength: 672 })),
+            tariffUnit: Attribute(0x1, TlvUInt8),
+            DayEntries: Attribute(0x03, TlvArray(TlvDayEntry, { maxLength: 672 })),
+            DayPatterns: Attribute(0x04, TlvArray(TlvDayPattern, { maxLength: 28 })),
+            CalendarPeriods: Attribute(0x05, TlvArray(TlvCalendarPeriod, { maxLength: 4 })),
+            tariffComponents: Attribute(0x0D, TlvArray(TlvTariffComponent, { maxLength: 672 })),
             tariffPeriods: Attribute(0x0E, TlvArray(TlvTariffPeriod, { maxLength: 672 })),
         },
 
@@ -151,6 +144,15 @@ const MyFancySchema = ClusterElement({
         AttributeElement({ name: "ClusterRevision", id: 0xfffd, type: "ClusterRevision", default: 1 }),
 
         AttributeElement({
+            name: "TariffInfo",
+            id: 0x0000,
+            type: "struct",
+            access: "R V",
+            conformance: "M",
+            quality: "X",
+        },),
+
+        AttributeElement({
             name: "TariffUnit",
             id: 0x0001,
             type: "enum8",
@@ -160,6 +162,24 @@ const MyFancySchema = ClusterElement({
         },),
 
         AttributeElement({
+            name: "DayEntries",
+            id: 0x0003,
+            type: "list",
+            access: "R V",
+            conformance: "M",
+            quality: "X",
+        },),
+
+        AttributeElement({
+            name: "TariffComponents",
+            id: 0x000D,
+            type: "list",
+            access: "R V",
+            conformance: "M",
+            quality: "X",
+        }),
+
+        AttributeElement({
             name: "TariffPeriods",
             id: 0x000E,
             type: "list",
@@ -167,10 +187,6 @@ const MyFancySchema = ClusterElement({
             conformance: "M",
             quality: "X",
         }),
-
-        DatatypeElement({
-            name: "TariffPeriodStruct",
-        })
     ],
 });
 

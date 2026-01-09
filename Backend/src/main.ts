@@ -2,10 +2,12 @@ import express from "express";
 import http from "http"
 import cors from "cors";
 import { Server } from "socket.io";
-import { Environment, StorageService } from "@matter/main";
+import { Environment, NodeId, Diagnostic, StorageService } from "@matter/main";
 import { CommissioningController } from "@project-chip/matter.js";
+import { ManualPairingCodeCodec } from "@matter/main/types";
+import { GeneralCommissioning } from "@matter/main/clusters";
 import { NodeStates } from "@project-chip/matter.js/device";
-import { DeviceEnergyManagement, DescriptorCluster } from "@matter/main/clusters";
+import { DeviceEnergyManagement, DescriptorCluster, BasicInformationCluster } from "@matter/main/clusters";
 import { CommodityTariffCluster, } from "./clusters/CommodityTariffFunctionality.js";
 
 const app = express();
@@ -94,7 +96,7 @@ nodes.forEach(async (nodeId: any) => {
                 //
                 if (endpoint) {
 
-                    console.log('Attempting to subscribe to the forecast');
+                    console.log('Attempting to subscribe to the forecast of nodes with a DEM cluster');
 
                     const deviceEnergyManagement = endpoint.getClusterClient(DeviceEnergyManagement.Complete);
 
@@ -112,6 +114,12 @@ nodes.forEach(async (nodeId: any) => {
 
                     } else {
                         console.error('No cluster client available for the DeviceEnergyManager...');
+                    }
+
+                    const commodityTariffCluster = endpoint.getClusterClient(CommodityTariffCluster);
+
+                    if (commodityTariffCluster) {
+                        console.log('Found a CommodityTariff Cluster');
                     }
                 }
 
@@ -144,21 +152,14 @@ app.get("/devices", async (request, response) => {
 
         const node = await commissioningController.getNode(nodeId);
 
-        var endpoint = node.getRootEndpoint();
+        const basicInformationCluster = node.getRootClusterClient(BasicInformationCluster);
 
-        if (!endpoint) {
-            return {};
-        }
-
-        const fancyCluster = endpoint.getClusterClient(CommodityTariffCluster);
-
-        if (fancyCluster) {
-            console.log("CommodityTariffCluster found!");
-        }
+        var productName = await basicInformationCluster?.getProductNameAttribute();
+        var vendorName = await basicInformationCluster?.getVendorNameAttribute();
 
         var deviceTypes = [];
 
-        const descriptorCluster = endpoint.getClusterClient(DescriptorCluster);
+        const descriptorCluster = node.getRootClusterClient(DescriptorCluster);
 
         if (descriptorCluster) {
 
@@ -174,26 +175,12 @@ app.get("/devices", async (request, response) => {
                     continue;
                 }
 
-                const fancyCluster = endpoint.getClusterClient(CommodityTariffCluster);
-
-                if (fancyCluster) {
-                    console.log("CommodityTariffCluster found!");
-
-                    let unit = await fancyCluster.getTariffUnitAttribute();
-                    console.log(`Unit: ${unit}`);
-
-                    let periods = await fancyCluster.getTariffPeriodsAttribute();
-                    console.log(`There are ${periods.length} periods`);
-                }
-
-                // Get the Descriptor cluster client
                 const descriptorCluster = endpoint.getClusterClient(DescriptorCluster);
 
                 if (!descriptorCluster) {
                     continue;
                 }
 
-                // Retrieve the device type list
                 const deviceTypeList = await descriptorCluster.getDeviceTypeListAttribute();
 
                 for (const deviceType of deviceTypeList) {
@@ -203,8 +190,10 @@ app.get("/devices", async (request, response) => {
         }
 
         return {
-            id: nodeId.toString(), state: node.state,
-            manufacturer: node?.basicInformation?.manufacturerName?.toString(),
+            id: nodeId.toString(),
+            state: node.state,
+            productName,
+            vendorName,
             deviceTypes,
         }
     });
@@ -213,6 +202,187 @@ app.get("/devices", async (request, response) => {
 
     response.send(devices);
 });
+
+app.get("/sources", async (_, response) => {
+
+    var sources: any[] = [];
+
+    // Find all endpoints and assign them a source based on their deviceType
+    //
+    const nodeDetails = commissioningController.getCommissionedNodes();
+
+    await Promise.all(nodeDetails.map(async (nodeId) => {
+
+        const node = await commissioningController.getNode(nodeId);
+
+        const basicInformationCluster = node.getRootClusterClient(BasicInformationCluster);
+
+        var productName = await basicInformationCluster?.getProductNameAttribute();
+        var vendorName = await basicInformationCluster?.getVendorNameAttribute();
+
+        const descriptorCluster = node.getRootClusterClient(DescriptorCluster);
+
+        const partsList = await descriptorCluster!.getPartsListAttribute();
+
+        for (const endpointId of partsList!) {
+
+            const endpoint = node.getDeviceById(endpointId);
+
+            if (!endpoint) {
+                continue;
+            }
+
+            const descriptorCluster = endpoint.getClusterClient(DescriptorCluster);
+
+            if (!descriptorCluster) {
+                continue;
+            }
+
+            const deviceTypeList = await descriptorCluster.getDeviceTypeListAttribute();
+
+            for (const deviceType of deviceTypeList) {
+                if (deviceType.deviceType == 1299) {
+
+                    console.log("Adding Tariff");
+
+                    sources.push({
+                        nodeId: nodeId.toString(),
+                        endpointId: endpointId,
+                        source: "tariff",
+                        vendorName,
+                        productName
+                    });
+
+                    break;
+                }
+            }
+        }
+    }));
+
+    response.send(sources);
+});
+
+app.post("/devices", async (request, response) => {
+
+    let data = request.body;
+
+    let setupPin, shortDiscriminator;
+
+    const pairingCodeCodec = ManualPairingCodeCodec.decode(data.manualSetupCode);
+    shortDiscriminator = pairingCodeCodec.shortDiscriminator;
+    setupPin = pairingCodeCodec.passcode;
+
+    console.log(`Data extracted from pairing code: ${Diagnostic.json(pairingCodeCodec)}`);
+
+    const commissioningOptions = {
+        regulatoryLocation: GeneralCommissioning.RegulatoryLocationType.IndoorOutdoor,
+        regulatoryCountryCode: "XX",
+    };
+
+    const options = {
+        commissioning: commissioningOptions,
+        discovery: {
+            identifierData: { shortDiscriminator }
+        },
+        passcode: setupPin,
+    };
+
+    //console.log(`Commissioning ... ${Diagnostic.json(options)}`);
+
+    const nodeId = await commissioningController.commissionNode(options);
+
+    console.log(`Commissioning successfully done with nodeId ${nodeId}`);
+
+    return new Response("data", { status: 200 })
+});
+
+app.delete("/devices/:nodeId", async (request, response) => {
+
+    const { nodeId } = request.params;
+
+    let node = await commissioningController.getNode(NodeId(nodeId));
+
+    await node.decommission();
+
+    response.status(204).send();
+});
+
+var gTariffSourceNodeId: bigint;
+var gTariffSourceEndpointId: number;
+
+app.put("/settings", async (request, response) => {
+
+    // Fetch and populate the tariff information if a tariffSource is set.
+    //
+    const { tariffSourceNodeId, tariffSourceEndpointId } = request.body;
+
+    console.log(`Setting ${tariffSourceNodeId}|${tariffSourceEndpointId} as Tariff Source`);
+
+    gTariffSourceNodeId = tariffSourceNodeId;
+    gTariffSourceEndpointId = tariffSourceEndpointId;
+
+    response.send();
+});
+
+app.get("/tariff", async (request, response) => {
+
+    // Use the source node.
+    //
+    const node = await commissioningController.getNode(NodeId(gTariffSourceNodeId));
+
+    const endpoint = node.getDeviceById(gTariffSourceEndpointId);
+
+    // Process the node details
+    //
+    const commodityTariffCluster = endpoint!.getClusterClient(CommodityTariffCluster);
+
+    let tariffSlots: any[] = [];
+
+    if (commodityTariffCluster) {
+
+        let info = await commodityTariffCluster.getTariffInfoAttribute();
+        console.log(`TariffLabel: ${info.tariffLabel}`);
+        console.log(`Provider: ${info.providerName}`);
+
+        let unit = await commodityTariffCluster.getTariffUnitAttribute();
+        console.log(`Unit: ${unit}`);
+
+        let dayEntries = await commodityTariffCluster.getDayEntriesAttribute();
+        console.log(`There are ${dayEntries.length} dayEntries`);
+
+        let dayPatterns = await commodityTariffCluster.getDayPatternsAttribute();
+        console.log(`There are ${dayPatterns.length} dayPatterns`);
+
+        let calendarPeriods = await commodityTariffCluster.getCalendarPeriodsAttribute();
+        console.log(`There are ${calendarPeriods.length} calendarPeriods`);
+
+        let tariffComponents = await commodityTariffCluster.getTariffComponentsAttribute(true);
+        console.log(`There are ${tariffComponents.length} tariffComponents`);
+
+        let periods = await commodityTariffCluster.getTariffPeriodsAttribute();
+        console.log(`There are ${periods.length} periods`);
+
+        // Go through each dayEntry??
+        for(let i = 0; i < dayEntries.length; i++) {
+
+            console.log(`DayEntry ${i}: dayEntryId ${dayEntries[i].dayEntryId} startTime ${dayEntries[i].startTime}`);
+            console.log(`TariffComponent ${i}: price ${tariffComponents[i].price?.price}`);
+
+            var hour = Math.floor(dayEntries[i].startTime / 60);          
+            var minute = dayEntries[i].startTime % 60;
+            
+            tariffSlots.push({
+                hour,
+                startMinute: minute,
+                endMinute: minute == 30 ? 59 : 29,
+                price: tariffComponents[i].price.price
+            });
+        }
+    }
+
+    response.send(tariffSlots);
+});
+
 
 const PORT = process.env.PORT || 4000;
 

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Table from 'react-bootstrap/Table';
 import Link from 'next/link'
 import Badge from 'react-bootstrap/Badge';
-import Container from 'react-bootstrap/Container';
+import { Container } from 'react-bootstrap';
 import Alert from 'react-bootstrap/Alert';
 import { NodeStates } from '@project-chip/matter.js/device';
 import { Manager } from 'socket.io-client';
@@ -74,8 +74,8 @@ export default function Page() {
     return stateBadge;
   }
 
-  const deviceTRs = devices.map((device:any) => {
-    const deviceTypes = device.deviceTypes.map((dt:any) => {
+  const deviceTRs = devices.map((device: any) => {
+    const deviceTypes = device.deviceTypes.map((dt: any) => {
 
       var name = dt.toString();
 
@@ -97,6 +97,9 @@ export default function Page() {
           break;
         case 1293:
           name = "Device Energy Manager";
+          break;
+        case 1299:
+          name = "Electrical Energy Tariff";
           break;
         case 117:
           name = "Dishwasher";

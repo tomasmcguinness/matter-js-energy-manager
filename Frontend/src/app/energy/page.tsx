@@ -3,6 +3,7 @@
 import TariffTimeline from '../../tariffTimeline.tsx';
 import { useEffect, useState } from 'react';
 import DeviceView from '../../deviceView.tsx';
+import { Container } from 'react-bootstrap';
 
 export default function Page() {
 
@@ -37,8 +38,8 @@ export default function Page() {
       </div>);
   });
 
-  return <div>
-    <h1>Energy Forecast</h1>
+  return  <Container>
+    <h1>Energy</h1>
     <hr />
     <div style={{ position: 'relative' }} suppressHydrationWarning={true}>
 
@@ -60,5 +61,5 @@ export default function Page() {
       <button className="btn btn-primary" onClick={handleOptimiseClick}>Optimise</button>
 
     </div>
-  </div>;
+  </Container>;
 };
