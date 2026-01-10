@@ -1,6 +1,8 @@
 import express from "express";
 import http from "http"
 import cors from "cors";
+import fs from "fs";
+import path from "path";
 import { Server } from "socket.io";
 import { Environment, NodeId, Diagnostic, StorageService } from "@matter/main";
 import { CommissioningController } from "@project-chip/matter.js";
@@ -307,8 +309,19 @@ app.delete("/devices/:nodeId", async (request, response) => {
     response.status(204).send();
 });
 
-var gTariffSourceNodeId: bigint;
-var gTariffSourceEndpointId: number;
+const EM_PATH = path.resolve(path.join(process.cwd(), '.em'));
+
+var gTariffSourceNodeId: string = "0";
+var gTariffSourceEndpointId: number = 0;
+
+app.get("/settings", async (request, response) => {
+
+    response.send({
+        tariffSourceNodeId: gTariffSourceNodeId,
+        tariffSourceEndpointId: gTariffSourceEndpointId
+    });
+
+});
 
 app.put("/settings", async (request, response) => {
 
@@ -321,10 +334,26 @@ app.put("/settings", async (request, response) => {
     gTariffSourceNodeId = tariffSourceNodeId;
     gTariffSourceEndpointId = tariffSourceEndpointId;
 
-    response.send();
+    const settings = {
+        tariffSourceNodeId,
+        tariffSourceEndpointId
+    };
+
+    try {
+        fs.writeFileSync(path.join(EM_PATH, "settings.json"), JSON.stringify(settings), { flag: "w+" });
+        response.status(204).send(settings);    
+    } catch (err) {
+        console.error(err);
+        return response.status(500).send();
+    }
 });
 
 app.get("/tariff", async (request, response) => {
+
+    if(gTariffSourceNodeId === "0") {
+        response.status(404).send();
+        return;
+    }
 
     // Use the source node.
     //
@@ -391,6 +420,22 @@ app.get("/tariff", async (request, response) => {
     response.send(tariffSlots);
 });
 
+if (!fs.existsSync(EM_PATH))
+{
+    fs.mkdirSync(EM_PATH);
+}
+
+// Load settings
+//
+const loadSettings = () => {
+    const settingsValue: string = fs.readFileSync(path.join(EM_PATH, "settings.json"), "utf8");
+const settings: any = JSON.parse(settingsValue);
+
+gTariffSourceNodeId = settings.tariffSourceNodeId;
+gTariffSourceEndpointId = settings.tariffSourceEndpointId;
+}
+
+loadSettings();
 
 const PORT = process.env.PORT || 4000;
 
