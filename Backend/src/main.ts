@@ -336,7 +336,7 @@ app.get("/tariff", async (request, response) => {
     //
     const commodityTariffCluster = endpoint!.getClusterClient(CommodityTariffCluster);
 
-    let tariffSlots: any[] = [];
+    let tariffPeriods: any[] = [];
 
     if (commodityTariffCluster) {
 
@@ -371,7 +371,7 @@ app.get("/tariff", async (request, response) => {
             var hour = Math.floor(dayEntries[i].startTime / 60);          
             var minute = dayEntries[i].startTime % 60;
             
-            tariffSlots.push({
+            tariffPeriods.push({
                 hour,
                 startMinute: minute,
                 endMinute: minute == 30 ? 59 : 29,
@@ -379,6 +379,14 @@ app.get("/tariff", async (request, response) => {
             });
         }
     }
+
+    let tariffSlots: any[] = [];
+    let currentDate = new Date();
+
+    tariffPeriods.forEach(element => {
+        let startDate = currentDate.setHours(element.hour, element.startMinute, 0, 0);
+        tariffSlots.push({ startDate: startDate, price: element.price });
+    });
 
     response.send(tariffSlots);
 });
