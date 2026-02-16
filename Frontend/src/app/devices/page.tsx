@@ -120,11 +120,11 @@ export default function Page() {
   var body = null;
 
   if (isLoading) {
-    body = <Alert variant="info">Loading nodes...</Alert>;
+    body = <Alert variant="info">Loading devices...</Alert>;
   }
   else {
     if (deviceTRs.length == 0) {
-      body = <Alert variant="info">No devices have been commissioned. We cannot use Bluetooth to commission a device, so open the Pairing Windows using another device.</Alert>
+      body = <Alert variant="info">No devices have been commissioned.</Alert>
     } else {
       body = <Table striped bordered hover>
         <thead>

@@ -15,7 +15,7 @@ export default function Page() {
   const [devices, setDevices] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch('http://localhost:4000/tariff').then(r => r.json()).then(data => { setPrices(data); });
+    fetch('http://localhost:4000/tariff').then(r => { if(r.ok) { return r.json();} else { return [0];}}).then(data => { setPrices(data); });
     fetch('http://localhost:4000/devices').then(r => r.json()).then(data => { setDevices(data); });
 
     setCurrentTime(new Date())

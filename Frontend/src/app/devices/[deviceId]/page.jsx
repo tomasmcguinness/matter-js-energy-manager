@@ -66,14 +66,15 @@ export default function Page({ params }) {
       optOutStatus = <span className="badge text-bg-danger">Opted Out</span>
     } else if (device.optOut === 0) {
       optOutStatus = <span className="badge text-bg-success">Opted In</span>
+    } else {
+      optOutStatus = <span className="badge text-bg-warn">Unknown</span>
     }
   }
 
   return <Container>
-    <h1>{deviceId}</h1>
+    <h1>{deviceId} <Button className="btn btn-danger header-button" onClick={unpairDevice}>Unpair Device</Button></h1>
     <hr />
     <h3>Device Energy Management : {optOutStatus}</h3>
     <Link href="/devices" className="btn btn-secondary" style={{ marginRight: '5px' }}>Back to Devices</Link>
-    <Button onClick={unpairDevice}>Unpair Device</Button>
   </Container>;
 };

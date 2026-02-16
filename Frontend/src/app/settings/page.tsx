@@ -10,13 +10,10 @@ export default function Page() {
 
     useEffect(() => {
         fetch('http://localhost:4000/sources').then(r => r.json()).then(data => { setSources(data); });
+        fetch('http://localhost:4000/settings').then(r => r.json()).then(data => { setTariffSource(`${data.tariffSourceNodeId}|${data.tariffSourceEndpointId}`); });
     }, []);
 
     const saveSettings = () => {
-
-        if(tariffSource === "none") {
-            return;
-        }
 
         var tariffSourceNodeId = tariffSource!.split('|')[0];
         var tariffSourceEndpointId = parseInt(tariffSource!.split('|')[1]);
@@ -27,7 +24,13 @@ export default function Page() {
         };
         var json = JSON.stringify(object);
 
-        fetch(`http://localhost:4000/settings`, { method: "PUT", headers: { 'Content-Type': 'application/json' }, body: json });
+        fetch(`http://localhost:4000/settings`, { method: "PUT", headers: { 'Content-Type': 'application/json' }, body: json }).then(r => {
+            if(r.ok) {
+                alert("Settings updated!");
+            } else {
+                alert("Failed to update Settings. Please try again!");
+            }
+        });
     }
 
     const tariffOptions = sources.filter((s: any) => s.source == "tariff").map((s: any, index: number) => {
@@ -45,7 +48,7 @@ export default function Page() {
                 <div className="card-body">
                     <label htmlFor="tariffSource" className="form-label">The source of tariff information</label>
                     <select id="tariffSource" className="form-select" value={tariffSource || 'none'} onChange={(e) => setTariffSource(e.target.value)}>
-                        <option value="none">None</option>
+                        <option value="0|0">None</option>
                         {tariffOptions}
                     </select>
                 </div>

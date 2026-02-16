@@ -1,5 +1,11 @@
 @import 'bootstrap/dist/css/bootstrap.min.css';
 
+.header-button {
+    display: table-cell;
+    float: right;
+    vertical-align: middle;
+}
+
 .tariffForecastContainer {
     width: 100%;
 }

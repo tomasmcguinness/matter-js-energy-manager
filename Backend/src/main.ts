@@ -89,9 +89,9 @@ nodes.forEach(async (nodeId: any) => {
     node.events.stateChanged.on(async (info) => {
         switch (info) {
             case NodeStates.Connected:
-                console.log(`state changed: Node ${nodeId} connected!`);
+                console.log(`stateChanged: Node ${nodeId} has connected!`);
 
-                var endpoint = node.getDeviceById(1);
+                var endpoint = node.getDeviceById(0x01);
 
                 // TODO Find the DeviceEnergyManagement dynamically cluster
                 // If a device even has one.
@@ -309,6 +309,43 @@ app.delete("/devices/:nodeId", async (request, response) => {
     response.status(204).send();
 });
 
+app.get("/devices/:nodeId/forecast", async (request, response) => {
+
+    const { nodeId } = request.params;
+
+    console.log(`Fetching forecast for device ${nodeId}`);
+
+    let node = await commissioningController.getNode(NodeId(nodeId));
+
+    const endpoint = node.getDeviceById(0x01);
+
+    var forecast = null;
+
+    if (endpoint) {
+
+        const deviceEnergyManagement = endpoint.getClusterClient(DeviceEnergyManagement.Complete);
+
+        console.log({ deviceEnergyManagement });
+
+        if (deviceEnergyManagement) {
+            forecast = await deviceEnergyManagement.getForecastAttribute();
+        }
+    }
+
+    if (forecast) {
+        console.log({ forecast });
+
+        if (forecast.startTime === 0) {
+            response.status(204).send();
+        } else {
+            response.send(forecast);
+        }
+    } else {
+        console.log('No forecast available for device. Return 204');
+        response.status(204).send();
+    }
+});
+
 const EM_PATH = path.resolve(path.join(process.cwd(), '.em'));
 
 var gTariffSourceNodeId: string = "0";
@@ -436,6 +473,10 @@ gTariffSourceEndpointId = settings.tariffSourceEndpointId;
 }
 
 loadSettings();
+
+io.on('connection', (socket) => {
+    console.log('a user connected');
+});
 
 const PORT = process.env.PORT || 4000;
 

@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link';
 import { useState } from 'react';
-import { Container } from 'react-bootstrap';
+import { Container, Alert } from 'react-bootstrap';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 
@@ -27,6 +27,9 @@ const SocketComponent = () => {
   return <Container>
     <h1>Add Node</h1>
     <hr />
+    <Alert>
+       We cannot use Bluetooth to commission a device at present. Commission the device using another controller and then open its Commissioning Window.
+    </Alert>
     <Form>
       <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
         <Form.Label>Manual Pairing Code</Form.Label>
