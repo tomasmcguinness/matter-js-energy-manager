@@ -9,9 +9,10 @@ export async function GET(req: Request, res: any) {
     let commissioningController = await getController();
     const nodeDetails = commissioningController.getCommissionedNodes();
 
-    let mapResult : Promise<Device>[] = nodeDetails.map(async (nodeId) => { 
+    let mapResult : Promise<Device|null>[] = nodeDetails.map(async (nodeId) => { 
         const node = await commissioningController.getNode(nodeId);
-        return <Device> { id: nodeId.toString(), state: node.state, manufacturer: node?.basicInformation?.manufacturerName?.toString() } 
+        return null;
+        //return <Device> { id: nodeId.toString(), state: node.state, manufacturer: node?.basicInformation?.manufacturerName?.toString() } 
     });
 
     const devices = await Promise.all(mapResult);

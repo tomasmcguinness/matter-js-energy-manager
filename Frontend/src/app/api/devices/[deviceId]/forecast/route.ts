@@ -1,11 +1,11 @@
 import { NodeId } from "@matter/main/types";
-import type { NextRequest } from 'next/server'
+import type { NextApiRequest } from 'next'
 import { getController } from "../../../../../../matterServer.js";
 import { DeviceEnergyManagement } from "@matter/main/clusters";
 import { ClusterClientObj } from "@matter/main/protocol";
 import Device from "../../../../../device.ts";
 
-export async function GET(req: NextRequest, { params }: any) {
+export async function GET(req: NextApiRequest, { params }: any) {
 
     const { deviceId } = await params;
 
@@ -27,7 +27,7 @@ export async function GET(req: NextRequest, { params }: any) {
     return Response.json(null);
 }
 
-export async function POST(req: NextRequest, { params }: any) {
+export async function POST(req: NextApiRequest, { params }: any) {
 
     const { deviceId } = await params;
 

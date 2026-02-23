@@ -1,4 +1,3 @@
-import { FormaldehydeConcentrationMeasurement } from "@matter/main/model"
 import { NodeStates, PairedNode } from "@project-chip/matter.js/device"
 
 export type Slot = {
@@ -14,7 +13,7 @@ export type Forecast = {
 
 type Device = {
     id: string,
-    state?: NodeStates,
+    state?: string,
     manufacturer?: string,
     forecast?: Forecast
 }
